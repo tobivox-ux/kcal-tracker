@@ -1,6 +1,6 @@
-// Placeholder / example data used until a Supabase project is connected
-// and the user's real training plan + macro targets are entered.
-// Split: 4x/week Push-Pull. Phase: Cutting.
+// Trainingsplan (routineDays weiter unten) 1:1 aus Hevy übernommen.
+// Ernährungs-/Phasen-Zahlen sind weiterhin Platzhalter, bis das echte
+// Supabase-Backend angebunden ist. Split: Push/Pull, je 2x/Woche.
 
 import type { MealType, PhaseType } from '../types/database';
 
@@ -45,7 +45,7 @@ export interface Achievement {
 
 export const recentAchievements: Achievement[] = [
   { emoji: '🔥', title: '12 Tage Streak', subtitle: 'Täglich geloggt' },
-  { emoji: '🏆', title: 'Neuer PR', subtitle: 'Kniebeuge 90 kg' },
+  { emoji: '🏆', title: 'Neuer PR', subtitle: 'Latzug 86 kg' },
   { emoji: '💪', title: '20 Workouts', subtitle: 'Seit Phasenstart' },
   { emoji: '🎯', title: 'Protein-Woche', subtitle: '7/7 Tage Ziel erreicht' },
 ];
@@ -70,264 +70,203 @@ export interface DemoRoutineDay {
   exercises: DemoExercise[];
 }
 
-// ⚠️ Platzhalter-Übungen — werden durch den echten Hevy-Trainingsplan
-// ersetzt, sobald der als Text/Screenshot da ist (Netzwerkzugriff auf
-// hevy.com ist aus dieser Umgebung blockiert, siehe Chat).
-export const routineName = 'Push / Pull (4x/Woche)';
+// Aus deinen Hevy-Screenshots übernommen (Stand: letzte geloggte Session je
+// Übung). Jede der zwei Routinen wird 2x/Woche trainiert (4 Sessions/Woche
+// gesamt) — keine separaten A/B-Varianten. targetReps ohne explizite Range
+// im Screenshot wurde aus der tatsächlich geloggten Wdh.-Spanne abgeleitet.
+// Auffällig: kein einziger Bein-/Unterkörper-Reiz in beiden Routinen — falls
+// das Absicht ist (reines Oberkörper-Ziel), passt das; falls nicht, sag
+// Bescheid, dann bau ich einen Beintag mit ein.
+export const routineName = 'Push / Pull (je 2x/Woche)';
 
 export const routineDays: DemoRoutineDay[] = [
   {
-    id: 'push-a',
-    label: 'Push A',
+    id: 'push',
+    label: 'Push',
     exercises: [
       {
-        name: 'Bankdrücken',
-        targetSets: 4,
-        targetReps: '6-8',
-        lastWeightKg: 80,
-        sets: [
-          { weightKg: 80, reps: 7, done: true },
-          { weightKg: 80, reps: 6, done: true },
-          { weightKg: 77.5, reps: 8, done: false },
-          { weightKg: 77.5, reps: 8, done: false },
-        ],
-      },
-      {
-        name: 'Schulterdrücken',
+        name: 'Brustpresse (Maschine)',
         targetSets: 3,
-        targetReps: '8-10',
-        lastWeightKg: 45,
+        targetReps: '3-6',
+        lastWeightKg: 65,
         sets: [
-          { weightKg: 45, reps: 9, done: true },
-          { weightKg: 45, reps: 8, done: false },
-          { weightKg: 45, reps: 8, done: false },
+          { weightKg: 65, reps: 6, done: false },
+          { weightKg: 65, reps: 3, done: false },
+          { weightKg: 60, reps: 4, done: false },
         ],
       },
       {
-        name: 'Schrägbankdrücken Kurzhantel',
+        name: 'Schrägbankdrücken (Kurzhantel)',
         targetSets: 3,
         targetReps: '8-12',
-        lastWeightKg: 30,
+        lastWeightKg: 28,
         sets: [
-          { weightKg: 30, reps: 10, done: false },
-          { weightKg: 30, reps: 10, done: false },
-          { weightKg: 30, reps: 10, done: false },
+          { weightKg: 28, reps: 5, done: false },
+          { weightKg: 26, reps: 6, done: false },
+          { weightKg: 26, reps: 7, done: false },
         ],
       },
       {
-        name: 'Seitheben',
+        name: 'Schulterpresse (Kurzhantel)',
         targetSets: 3,
-        targetReps: '12-15',
-        lastWeightKg: 10,
-        sets: [
-          { weightKg: 10, reps: 14, done: false },
-          { weightKg: 10, reps: 14, done: false },
-          { weightKg: 10, reps: 14, done: false },
-        ],
-      },
-      {
-        name: 'Trizepsdrücken Kabelzug',
-        targetSets: 3,
-        targetReps: '10-12',
-        lastWeightKg: 25,
-        sets: [
-          { weightKg: 25, reps: 12, done: false },
-          { weightKg: 25, reps: 12, done: false },
-          { weightKg: 25, reps: 12, done: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'pull-a',
-    label: 'Pull A',
-    exercises: [
-      {
-        name: 'Klimmzüge',
-        targetSets: 4,
-        targetReps: '6-10',
-        lastWeightKg: 0,
-        sets: [
-          { weightKg: 0, reps: 8, done: false },
-          { weightKg: 0, reps: 8, done: false },
-          { weightKg: 0, reps: 7, done: false },
-          { weightKg: 0, reps: 6, done: false },
-        ],
-      },
-      {
-        name: 'Langhantelrudern',
-        targetSets: 4,
-        targetReps: '6-8',
-        lastWeightKg: 60,
-        sets: [
-          { weightKg: 60, reps: 7, done: false },
-          { weightKg: 60, reps: 7, done: false },
-          { weightKg: 60, reps: 6, done: false },
-          { weightKg: 60, reps: 6, done: false },
-        ],
-      },
-      {
-        name: 'Latzug eng',
-        targetSets: 3,
-        targetReps: '10-12',
-        lastWeightKg: 55,
-        sets: [
-          { weightKg: 55, reps: 11, done: false },
-          { weightKg: 55, reps: 11, done: false },
-          { weightKg: 55, reps: 10, done: false },
-        ],
-      },
-      {
-        name: 'Face Pulls',
-        targetSets: 3,
-        targetReps: '15-20',
+        targetReps: '8-12',
         lastWeightKg: 20,
         sets: [
-          { weightKg: 20, reps: 18, done: false },
-          { weightKg: 20, reps: 18, done: false },
-          { weightKg: 20, reps: 16, done: false },
+          { weightKg: 20, reps: 9, done: false },
+          { weightKg: 20, reps: 9, done: false },
+          { weightKg: 20, reps: 7, done: false },
         ],
       },
       {
-        name: 'Bizepscurls Langhantel',
+        name: 'Cable Crossovers',
+        targetSets: 2,
+        targetReps: '10-15',
+        lastWeightKg: 32,
+        sets: [
+          { weightKg: 32, reps: 10, done: false },
+          { weightKg: 36, reps: 7, done: false },
+        ],
+      },
+      {
+        name: 'Einarmiges Trizepsdrücken (Kabel)',
         targetSets: 3,
-        targetReps: '8-12',
-        lastWeightKg: 30,
+        targetReps: '7-9',
+        lastWeightKg: 23,
         sets: [
-          { weightKg: 30, reps: 10, done: false },
-          { weightKg: 30, reps: 10, done: false },
-          { weightKg: 30, reps: 9, done: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'push-b',
-    label: 'Push B',
-    exercises: [
-      {
-        name: 'Schulterdrücken Langhantel',
-        targetSets: 4,
-        targetReps: '6-8',
-        lastWeightKg: 40,
-        sets: [
-          { weightKg: 40, reps: 7, done: false },
-          { weightKg: 40, reps: 7, done: false },
-          { weightKg: 40, reps: 6, done: false },
-          { weightKg: 40, reps: 6, done: false },
+          { weightKg: 23, reps: 9, done: false },
+          { weightKg: 23, reps: 7, done: false },
+          { weightKg: 23, reps: 7, done: false },
         ],
       },
       {
-        name: 'Schrägbankdrücken Langhantel',
-        targetSets: 4,
-        targetReps: '6-10',
-        lastWeightKg: 60,
-        sets: [
-          { weightKg: 60, reps: 8, done: false },
-          { weightKg: 60, reps: 8, done: false },
-          { weightKg: 60, reps: 7, done: false },
-          { weightKg: 60, reps: 7, done: false },
-        ],
-      },
-      {
-        name: 'Dips',
+        name: 'Überkopf-Trizepsstrecken (Kabelzug)',
         targetSets: 3,
-        targetReps: '8-12',
-        lastWeightKg: 0,
+        targetReps: '10-15',
+        lastWeightKg: 36,
         sets: [
-          { weightKg: 0, reps: 11, done: false },
-          { weightKg: 0, reps: 10, done: false },
-          { weightKg: 0, reps: 9, done: false },
+          { weightKg: 36, reps: 8, done: false },
+          { weightKg: 36, reps: 7, done: false },
+          { weightKg: 36, reps: 5, done: false },
         ],
       },
       {
-        name: 'Frontheben',
+        name: 'Seitheben (Maschine)',
         targetSets: 3,
-        targetReps: '12-15',
-        lastWeightKg: 8,
-        sets: [
-          { weightKg: 8, reps: 14, done: false },
-          { weightKg: 8, reps: 14, done: false },
-          { weightKg: 8, reps: 13, done: false },
-        ],
-      },
-      {
-        name: 'Trizeps Overhead',
-        targetSets: 3,
-        targetReps: '10-12',
-        lastWeightKg: 20,
-        sets: [
-          { weightKg: 20, reps: 12, done: false },
-          { weightKg: 20, reps: 11, done: false },
-          { weightKg: 20, reps: 11, done: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'pull-b',
-    label: 'Pull B',
-    exercises: [
-      {
-        name: 'Kreuzheben',
-        targetSets: 3,
-        targetReps: '5-6',
-        lastWeightKg: 100,
-        sets: [
-          { weightKg: 100, reps: 5, done: false },
-          { weightKg: 100, reps: 5, done: false },
-          { weightKg: 100, reps: 5, done: false },
-        ],
-      },
-      {
-        name: 'Kurzhantelrudern einarmig',
-        targetSets: 3,
-        targetReps: '8-12',
-        lastWeightKg: 26,
-        sets: [
-          { weightKg: 26, reps: 10, done: false },
-          { weightKg: 26, reps: 10, done: false },
-          { weightKg: 26, reps: 9, done: false },
-        ],
-      },
-      {
-        name: 'Latzug weit',
-        targetSets: 3,
-        targetReps: '10-12',
-        lastWeightKg: 52,
-        sets: [
-          { weightKg: 52, reps: 11, done: false },
-          { weightKg: 52, reps: 11, done: false },
-          { weightKg: 52, reps: 10, done: false },
-        ],
-      },
-      {
-        name: 'Reverse Flys',
-        targetSets: 3,
-        targetReps: '15-20',
-        lastWeightKg: 8,
-        sets: [
-          { weightKg: 8, reps: 16, done: false },
-          { weightKg: 8, reps: 16, done: false },
-          { weightKg: 8, reps: 15, done: false },
-        ],
-      },
-      {
-        name: 'Hammercurls',
-        targetSets: 3,
-        targetReps: '10-12',
+        targetReps: '12-20',
         lastWeightKg: 14,
         sets: [
-          { weightKg: 14, reps: 11, done: false },
-          { weightKg: 14, reps: 11, done: false },
-          { weightKg: 14, reps: 10, done: false },
+          { weightKg: 14, reps: 7, done: false },
+          { weightKg: 14, reps: 7, done: false },
+          { weightKg: 14, reps: 7, done: false },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'pull',
+    label: 'Pull',
+    exercises: [
+      {
+        name: 'Bizepscurl (EZ-Hantel)',
+        targetSets: 3,
+        targetReps: '5-7',
+        lastWeightKg: 20,
+        sets: [
+          { weightKg: 20, reps: 6, done: false },
+          { weightKg: 20, reps: 7, done: false },
+          { weightKg: 20, reps: 5, done: false },
+        ],
+      },
+      {
+        name: 'Hammer Curl (Kabel)',
+        targetSets: 3,
+        targetReps: '6-8',
+        lastWeightKg: 41,
+        sets: [
+          { weightKg: 41, reps: 8, done: false },
+          { weightKg: 41, reps: 6, done: false },
+          { weightKg: 41, reps: 6, done: false },
+        ],
+      },
+      {
+        name: 'Spidercurls',
+        targetSets: 2,
+        targetReps: '8',
+        lastWeightKg: 19.5,
+        sets: [
+          { weightKg: 19.5, reps: 8, done: false },
+          { weightKg: 19.5, reps: 8, done: false },
+        ],
+      },
+      {
+        name: 'Face Pull',
+        targetSets: 2,
+        targetReps: '10',
+        lastWeightKg: 91,
+        sets: [
+          { weightKg: 91, reps: 10, done: false },
+          { weightKg: 91, reps: 10, done: false },
+        ],
+      },
+      {
+        name: 'Latzug (Maschine)',
+        targetSets: 3,
+        targetReps: '6-8',
+        lastWeightKg: 86,
+        sets: [
+          { weightKg: 86, reps: 8, done: false },
+          { weightKg: 86, reps: 7, done: false },
+          { weightKg: 86, reps: 6, done: false },
+        ],
+      },
+      {
+        name: 'Gerader Lat-Pulldown (Kabel)',
+        targetSets: 3,
+        targetReps: '5-8',
+        lastWeightKg: 50,
+        sets: [
+          { weightKg: 50, reps: 8, done: false },
+          { weightKg: 50, reps: 6, done: false },
+          { weightKg: 50, reps: 5, done: false },
+        ],
+      },
+      {
+        name: 'Rudern am Kabel sitzend',
+        targetSets: 3,
+        targetReps: '7-9',
+        lastWeightKg: 55,
+        sets: [
+          { weightKg: 55, reps: 9, done: false },
+          { weightKg: 59, reps: 8, done: false },
+          { weightKg: 56, reps: 7, done: false },
+        ],
+      },
+      {
+        name: 'Crunch (Maschine)',
+        targetSets: 2,
+        targetReps: '6-8',
+        lastWeightKg: 43,
+        sets: [
+          { weightKg: 43, reps: 8, done: false },
+          { weightKg: 43, reps: 6, done: false },
+        ],
+      },
+      {
+        name: 'Wrist Curl (Handflächen oben, sitzend)',
+        targetSets: 3,
+        targetReps: '8-15',
+        lastWeightKg: 59,
+        sets: [
+          { weightKg: 59, reps: 8, done: false },
+          { weightKg: 59, reps: 10, done: false },
+          { weightKg: 59, reps: 15, done: false },
         ],
       },
     ],
   },
 ];
 
-export const todaysRoutineDayId = 'push-a';
+export const todaysRoutineDayId = 'push';
 
 export interface DemoMealEntry {
   name: string;

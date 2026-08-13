@@ -31,12 +31,6 @@ export default function WorkoutsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.noticeCard}>
-          <Text style={styles.noticeText}>
-            ⚠️ Platzhalter-Übungen — sobald dein echter Trainingsplan da ist, ersetzen wir diese hier 1:1.
-          </Text>
-        </View>
-
         {day.exercises.map((exercise, index) => {
           const doneSets = exercise.sets.filter((s) => s.done).length;
           const isDone = doneSets === exercise.sets.length;
@@ -90,15 +84,6 @@ const styles = StyleSheet.create({
   dayChipText: { fontSize: 13.5, fontWeight: '700', color: colors.secondaryLabel },
   dayChipTextActive: { color: colors.background },
   scroll: { padding: spacing.md, paddingTop: spacing.sm, paddingBottom: 100 },
-  noticeCard: {
-    backgroundColor: 'rgba(255,195,55,0.10)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,195,55,0.3)',
-    borderRadius: radius.md,
-    padding: spacing.sm + 2,
-    marginBottom: spacing.md,
-  },
-  noticeText: { fontSize: 12, color: colors.warning, lineHeight: 17 },
   exerciseCard: {
     flexDirection: 'row',
     alignItems: 'center',
