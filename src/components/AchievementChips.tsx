@@ -8,7 +8,10 @@ export function AchievementChips({ items }: { items: Achievement[] }) {
       <Text style={styles.title}>🏅 Erfolge</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {items.map((a) => (
-          <View key={a.title} style={styles.chip}>
+          <View
+            key={a.title}
+            style={[styles.chip, { backgroundColor: `${a.color}22`, borderColor: `${a.color}4D` }]}
+          >
             <Text style={styles.chipEmoji}>{a.emoji}</Text>
             <Text style={styles.chipTitle}>{a.title}</Text>
             <Text style={styles.chipSubtitle}>{a.subtitle}</Text>
@@ -32,8 +35,8 @@ const styles = StyleSheet.create({
   scroll: { gap: spacing.sm, paddingRight: spacing.sm },
   chip: {
     width: 118,
-    backgroundColor: colors.cardAlt,
     borderRadius: radius.md,
+    borderWidth: 1,
     padding: spacing.sm,
   },
   chipEmoji: { fontSize: 20, marginBottom: 4 },

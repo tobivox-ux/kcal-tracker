@@ -5,6 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
 import { foodDatabase, type DemoFood } from '../../src/lib/demoData';
+import { GradientButton } from '../../src/components/GradientButton';
 
 const MEAL_LABELS: Record<string, string> = {
   breakfast: 'Frühstück',
@@ -106,9 +107,7 @@ export default function AddFoodScreen() {
             <Text style={styles.backToSearchText}>Anderes Lebensmittel wählen</Text>
           </Pressable>
 
-          <Pressable style={styles.addBtn} onPress={() => router.back()}>
-            <Text style={styles.addBtnText}>Zu {MEAL_LABELS[meal ?? ''] ?? 'Mahlzeit'} hinzufügen</Text>
-          </Pressable>
+          <GradientButton label={`Zu ${MEAL_LABELS[meal ?? ''] ?? 'Mahlzeit'} hinzufügen`} onPress={() => router.back()} />
         </View>
       )}
     </SafeAreaView>
@@ -205,6 +204,4 @@ const styles = StyleSheet.create({
   macroPreviewLabel: { fontSize: 11.5, color: colors.secondaryLabel, marginTop: 2 },
   backToSearch: { alignItems: 'center', paddingVertical: spacing.sm, marginBottom: spacing.sm },
   backToSearchText: { fontSize: 13, color: colors.tint, fontWeight: '600' },
-  addBtn: { backgroundColor: colors.tint, borderRadius: radius.full, paddingVertical: 16, alignItems: 'center' },
-  addBtnText: { color: colors.background, fontSize: 16, fontWeight: '700' },
 });

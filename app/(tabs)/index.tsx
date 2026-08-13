@@ -41,7 +41,7 @@ export default function DashboardScreen() {
           <View style={styles.ringRow}>
             <ProgressRing
               progress={today.caloriesConsumed / activePhase.calorieTarget}
-              color={colors.calories}
+              gradientColors={[colors.tint, colors.celebrate]}
               value={`${caloriesRemaining}`}
               label="kcal übrig"
             />

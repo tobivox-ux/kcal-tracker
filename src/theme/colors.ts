@@ -10,11 +10,12 @@ export const colors = {
   tertiaryLabel: '#585C66',
 
   tint: '#FF5A36', // signature accent: CTAs, active tab, key numbers
+  celebrate: '#FF2E7A', // second gradient stop for CTAs + PR/achievement moments
 
   calories: '#FF3B5C',
   protein: '#B4FF39',
   carbs: '#FFC337',
-  fat: '#B26BFF',
+  fat: '#B26BFF', // also doubles as the Pull-day identity color (Push uses tint)
 
   cutting: '#FF3B5C',
   bulking: '#34D399',
@@ -23,6 +24,10 @@ export const colors = {
   success: '#B4FF39',
   warning: '#FFC337',
 } as const;
+
+// Shared CTA gradient — used by <GradientButton> for a warmer, more
+// energetic primary action than a flat fill.
+export const ctaGradient = ['#FF5A36', '#FF2E7A'] as const;
 
 export const spacing = {
   xs: 4,

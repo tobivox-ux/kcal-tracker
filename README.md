@@ -97,13 +97,16 @@ npm run web       # Browser
 - **Trainings-Verlauf:** eigener Screen (`workout/history.tsx`) mit Wochen-Dauer-Chart der letzten 8 Wochen und einer Liste vergangener Sessions (Datum, Dauer, Volumen, Sätze) — Zugang über "Verlauf" oben im Workouts-Tab
 - **Ernährung:** Tagesprotokoll nach Mahlzeit, Lebensmittelsuche mit Mengen-/Makro-Vorschau, Foto-Scan-Flow (echter Kamera-/Galerie-Zugriff über `expo-image-picker`; die Erkennung selbst ist aktuell eine Mock-Antwort — für echte Ergebnisse braucht es eine Supabase Edge Function, die das Foto an ein Vision-Modell schickt)
 - **Phasen:** Cutting/Bulking/Maintenance mit automatisch angepassten Kalorien-/Makrozielen (DB-Trigger)
-- **Motivation:** Trainings- & Log-Streak, PR-Badges, Achievement-Chips, wöchentliche Sonntags-Benachrichtigung (`expo-notifications`, lokal geplant — für zuverlässige Zustellung in Produktion empfiehlt sich ein Dev-Build statt Expo Go)
+- **Motivation:** Trainings- & Log-Streak, farbig hinterlegte Achievement-Chips, Gradient-CTAs (`GradientButton`, `expo-linear-gradient`) statt flacher Buttons, Gradient-Stroke im Kalorien-Ring — insgesamt bewusst kräftiger/fröhlicher statt nur ein Akzentton
+- **Benachrichtigungen** (`src/lib/notifications.ts`, `expo-notifications`):
+  - Wöchentlicher Sonntags-Rückblick (lokal geplant, für zuverlässige Zustellung in Produktion empfiehlt sich ein Dev-Build statt Expo Go)
+  - "Pause vorbei" — feuert auch im Hintergrund, sobald der Pausentimer abläuft; wird bei Skip/±15s neu geplant bzw. storniert
+  - Täglicher Tracking-Reminder abends (20 Uhr) — aktuell ein fester Zeitpunkt; für echtes "nur erinnern wenn noch nicht geloggt" braucht es einen Abgleich mit den Supabase-Logs
 
 Der Trainingsplan (`routineDays` in `src/lib/demoData.ts`) ist bereits echt —
 1:1 aus Hevy-Screenshots übernommen (Übung, Sätze, Wdh., Gewicht der letzten
-Session). Offen dabei: die genauen Routine-Namen aus Hevy, und dass beide
-Routinen aktuell keinen Bein-Reiz enthalten (reines Oberkörper-Setup — falls
-gewollt, passt das so; falls nicht, fehlt noch ein Beintag).
+Session), bewusst ohne Bein-Tag (mit dem Nutzer abgestimmt). Offen dabei: die
+genauen Routine-Namen aus Hevy statt der generischen Labels "Push"/"Pull".
 
 Ernährungs-/Phasen-Zahlen sowie alle Screens laufen weiterhin mit
 Beispieldaten aus `src/lib/demoData.ts`, bis ein Supabase-Projekt verbunden

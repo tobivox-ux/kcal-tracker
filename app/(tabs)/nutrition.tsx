@@ -1,12 +1,18 @@
+import { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
 import { activePhase, today, todaysMeals } from '../../src/lib/demoData';
+import { scheduleDailyTrackingReminder } from '../../src/lib/notifications';
 import type { MealType } from '../../src/types/database';
 
 export default function NutritionScreen() {
+  useEffect(() => {
+    scheduleDailyTrackingReminder().catch(() => {});
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>

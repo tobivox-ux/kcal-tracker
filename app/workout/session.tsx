@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
 import { routineDays, type DemoSet } from '../../src/lib/demoData';
 import { suggestNextSession } from '../../src/lib/progression';
+import { scheduleRestTimerNotification, cancelRestTimerNotification } from '../../src/lib/notifications';
+import { GradientButton } from '../../src/components/GradientButton';
 
 interface ExerciseState {
   name: string;
@@ -53,6 +55,7 @@ export default function WorkoutSessionScreen() {
         if (r === null) return null;
         if (r <= 1) {
           Vibration.vibrate(400);
+          cancelRestTimerNotification().catch(() => {});
           return null;
         }
         return r - 1;
@@ -101,6 +104,7 @@ export default function WorkoutSessionScreen() {
 
     setRestTotal(exercise.restSeconds);
     setRestRemaining(exercise.restSeconds);
+    scheduleRestTimerNotification(exercise.restSeconds).catch(() => {});
   }
 
   function addSet(exIndex: number) {
@@ -210,9 +214,7 @@ export default function WorkoutSessionScreen() {
           </View>
         ))}
 
-        <Pressable style={styles.finishButton} onPress={() => router.back()}>
-          <Text style={styles.finishButtonText}>Workout beenden</Text>
-        </Pressable>
+        <GradientButton label="Workout beenden" style={styles.finishButton} onPress={() => router.back()} />
       </ScrollView>
 
       {restRemaining !== null && (
@@ -226,14 +228,35 @@ export default function WorkoutSessionScreen() {
             <View style={styles.restActions}>
               <Pressable
                 style={styles.restBtn}
-                onPress={() => setRestRemaining((r) => Math.max(0, (r ?? 0) - 15))}
+                onPress={() =>
+                  setRestRemaining((r) => {
+                    const next = Math.max(0, (r ?? 0) - 15);
+                    scheduleRestTimerNotification(next).catch(() => {});
+                    return next;
+                  })
+                }
               >
                 <Text style={styles.restBtnText}>-15s</Text>
               </Pressable>
-              <Pressable style={styles.restBtn} onPress={() => setRestRemaining((r) => (r ?? 0) + 15)}>
+              <Pressable
+                style={styles.restBtn}
+                onPress={() =>
+                  setRestRemaining((r) => {
+                    const next = (r ?? 0) + 15;
+                    scheduleRestTimerNotification(next).catch(() => {});
+                    return next;
+                  })
+                }
+              >
                 <Text style={styles.restBtnText}>+15s</Text>
               </Pressable>
-              <Pressable style={styles.restSkip} onPress={() => setRestRemaining(null)}>
+              <Pressable
+                style={styles.restSkip}
+                onPress={() => {
+                  setRestRemaining(null);
+                  cancelRestTimerNotification().catch(() => {});
+                }}
+              >
                 <Ionicons name="close" size={16} color={colors.label} />
               </Pressable>
             </View>
@@ -309,7 +332,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    backgroundColor: colors.tint,
+    backgroundColor: colors.celebrate,
     borderRadius: radius.full,
     paddingHorizontal: 7,
     paddingVertical: 3,
@@ -324,14 +347,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   addSetText: { fontSize: 13, fontWeight: '700', color: colors.tint },
-  finishButton: {
-    backgroundColor: colors.tint,
-    borderRadius: radius.full,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: spacing.sm,
-  },
-  finishButtonText: { color: colors.background, fontSize: 16, fontWeight: '700' },
+  finishButton: { marginTop: spacing.sm },
   restBar: {
     position: 'absolute',
     left: 0,

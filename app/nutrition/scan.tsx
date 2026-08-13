@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { colors, radius, spacing } from '../../src/theme/colors';
+import { GradientButton } from '../../src/components/GradientButton';
 
 type Step = 'idle' | 'analyzing' | 'result';
 
@@ -65,10 +66,12 @@ export default function ScanFoodScreen() {
             Die KI schätzt automatisch, was auf dem Teller ist, und wie viele Kalorien & Makros es hat.
           </Text>
 
-          <Pressable style={styles.primaryBtn} onPress={() => pickImage('camera')}>
-            <Ionicons name="camera" size={18} color={colors.background} />
-            <Text style={styles.primaryBtnText}>Foto aufnehmen</Text>
-          </Pressable>
+          <GradientButton
+            label="Foto aufnehmen"
+            icon={<Ionicons name="camera" size={18} color={colors.background} />}
+            style={styles.primaryBtn}
+            onPress={() => pickImage('camera')}
+          />
           <Pressable style={styles.secondaryBtn} onPress={() => pickImage('library')}>
             <Ionicons name="images" size={18} color={colors.label} />
             <Text style={styles.secondaryBtnText}>Aus Galerie wählen</Text>
@@ -106,9 +109,7 @@ export default function ScanFoodScreen() {
           <Pressable style={styles.retakeBtn} onPress={() => setStep('idle')}>
             <Text style={styles.retakeText}>Neues Foto</Text>
           </Pressable>
-          <Pressable style={styles.primaryBtn} onPress={() => router.back()}>
-            <Text style={styles.primaryBtnText}>Eintrag hinzufügen</Text>
-          </Pressable>
+          <GradientButton label="Eintrag hinzufügen" onPress={() => router.back()} />
         </View>
       )}
     </SafeAreaView>
@@ -168,18 +169,7 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: spacing.xl,
   },
-  primaryBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.tint,
-    borderRadius: radius.full,
-    paddingVertical: 15,
-    width: '100%',
-    marginBottom: spacing.sm,
-  },
-  primaryBtnText: { color: colors.background, fontSize: 15.5, fontWeight: '700' },
+  primaryBtn: { width: '100%', marginBottom: spacing.sm },
   secondaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',

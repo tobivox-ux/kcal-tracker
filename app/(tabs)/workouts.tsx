@@ -6,6 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
 import { routineName, routineDays, todaysRoutineDayId } from '../../src/lib/demoData';
 import { suggestNextSession } from '../../src/lib/progression';
+import { GradientButton } from '../../src/components/GradientButton';
+
+function dayColor(dayId: string) {
+  return dayId === 'pull' ? colors.fat : colors.tint;
+}
 
 export default function WorkoutsScreen() {
   const [selectedDayId, setSelectedDayId] = useState(todaysRoutineDayId);
@@ -24,11 +29,17 @@ export default function WorkoutsScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daySwitcher}>
           {routineDays.map((d) => {
             const active = d.id === selectedDayId;
+            const c = dayColor(d.id);
             return (
               <Pressable
                 key={d.id}
                 onPress={() => setSelectedDayId(d.id)}
-                style={[styles.dayChip, active && styles.dayChipActive]}
+                style={[
+                  styles.dayChip,
+                  active
+                    ? { backgroundColor: c, borderColor: c }
+                    : { borderColor: `${c}55` },
+                ]}
               >
                 <Text style={[styles.dayChipText, active && styles.dayChipTextActive]}>{d.label}</Text>
               </Pressable>
@@ -68,9 +79,11 @@ export default function WorkoutsScreen() {
         })}
       </ScrollView>
 
-      <Pressable style={styles.startButton} onPress={() => router.push(`/workout/session?day=${day.id}`)}>
-        <Text style={styles.startButtonText}>Workout starten</Text>
-      </Pressable>
+      <GradientButton
+        label="Workout starten"
+        style={styles.startButton}
+        onPress={() => router.push(`/workout/session?day=${day.id}`)}
+      />
     </SafeAreaView>
   );
 }
@@ -96,7 +109,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  dayChipActive: { backgroundColor: colors.tint, borderColor: colors.tint },
   dayChipText: { fontSize: 13.5, fontWeight: '700', color: colors.secondaryLabel },
   dayChipTextActive: { color: colors.background },
   scroll: { padding: spacing.md, paddingTop: spacing.sm, paddingBottom: 100 },
@@ -134,15 +146,10 @@ const styles = StyleSheet.create({
     left: spacing.md,
     right: spacing.md,
     bottom: spacing.lg,
-    backgroundColor: colors.tint,
-    borderRadius: radius.full,
-    paddingVertical: 16,
-    alignItems: 'center',
-    shadowColor: colors.tint,
-    shadowOpacity: 0.35,
+    shadowColor: colors.celebrate,
+    shadowOpacity: 0.4,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
     elevation: 3,
   },
-  startButtonText: { color: colors.background, fontSize: 17, fontWeight: '700' },
 });

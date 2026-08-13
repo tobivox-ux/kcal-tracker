@@ -3,6 +3,7 @@
 // Supabase-Backend angebunden ist. Split: Push/Pull, je 2x/Woche.
 
 import type { MealType, PhaseType } from '../types/database';
+import { colors } from '../theme/colors';
 
 // Berechnet mit Mifflin-St Jeor (72kg, 170cm, 17 Jahre, männlich):
 // BMR = 10*72 + 6.25*170 - 5*17 + 5 = 1702.5 kcal
@@ -41,13 +42,14 @@ export interface Achievement {
   emoji: string;
   title: string;
   subtitle: string;
+  color: string;
 }
 
 export const recentAchievements: Achievement[] = [
-  { emoji: '🔥', title: '12 Tage Streak', subtitle: 'Täglich geloggt' },
-  { emoji: '🏆', title: 'Neuer PR', subtitle: 'Latzug 86 kg' },
-  { emoji: '💪', title: '20 Workouts', subtitle: 'Seit Phasenstart' },
-  { emoji: '🎯', title: 'Protein-Woche', subtitle: '7/7 Tage Ziel erreicht' },
+  { emoji: '🔥', title: '12 Tage Streak', subtitle: 'Täglich geloggt', color: colors.tint },
+  { emoji: '🏆', title: 'Neuer PR', subtitle: 'Latzug 86 kg', color: colors.carbs },
+  { emoji: '💪', title: '20 Workouts', subtitle: 'Seit Phasenstart', color: colors.fat },
+  { emoji: '🎯', title: 'Protein-Woche', subtitle: '7/7 Tage Ziel erreicht', color: colors.protein },
 ];
 
 export interface DemoSet {
