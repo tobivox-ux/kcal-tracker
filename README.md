@@ -32,8 +32,9 @@ app/                          Expo-Router-Screens (dateibasiertes Routing)
     progress.tsx                    Wochenrückblick + Körpergewichts-Kurve (mit Eintrage-Funktion)
   workout/
     session.tsx                  Aktives Workout: Satz-Logging, Pausentimer, PR-Erkennung
-    history.tsx                   Trainings-Verlauf: Woche/Monat/Jahr-Liniendiagramm + Sessions
+    history.tsx                   Trainings-Verlauf: Woche/Monat/Jahr-Liniendiagramm + Sessions + Cardio
     edit.tsx                      Trainingsplan bearbeiten: Übungen/Routinen hinzufügen & entfernen
+    cardio.tsx                     Cardio erfassen: Gerät, Intensität, Dauer -> realistische kcal
   nutrition/
     add-food.tsx                Lebensmittelsuche + Mengenauswahl
     scan.tsx                     Foto-Scan-Flow (Kamera/Galerie -> KI-Schätzung) + Mahlzeit-Auswahl
@@ -42,8 +43,10 @@ src/
   store/                        Zustand-Stores für den App-State (siehe unten)
   lib/
     supabase.ts                 Supabase-Client
-    demoData.ts                  Trainingsplan (echt, aus Hevy) + Ernährungs-/Phasen-/Zitate-Seeds
+    demoData.ts                  Trainingsplan (echt, aus Hevy) + Lebensmittel-DB + Zitate-Seeds
     progression.ts                Regelbasierter Gewicht-/Wdh.-Vorschlag pro Übung
+    cardio.ts                      MET-basierte Netto-kcal-Berechnung für Cardiogeräte
+    health.ts                       Apple Health / Health Connect: Schritte & Schlaf
     notifications.ts             Alle lokalen Benachrichtigungen (siehe unten)
   theme/                        Farb-/Spacing-Tokens (dunkles Theme, kräftiger Akzent)
   types/database.ts            TypeScript-Typen passend zum SQL-Schema
@@ -64,6 +67,9 @@ denselben Store lesen:
 | `phaseStore.ts` | Aktive Phase (Cutting/Bulking/Maintenance); steuert Kalorien-/Makroziele auf Dashboard & Ernährung |
 | `routineStore.ts` | Trainingsplan (Routinen + Übungen); Übungen/Routinen hinzufügen oder entfernen |
 | `bodyWeightStore.ts` | Körpergewichts-Verlauf für die Kurve im Fortschritts-Screen |
+| `workoutHistoryStore.ts` | Geloggte Kraft-Sessions (erst ab 5 min) und Cardio-Einheiten |
+| `hydrationStore.ts` | Getränke des Tages inkl. Cola/Monster, Tagesziel, Reset um Mitternacht |
+| `baseMealStore.ts` | Selbst angelegte Basis-Mahlzeiten zum Ein-Tap-Loggen |
 
 ## Datenbank-Schema
 
@@ -117,6 +123,12 @@ npm run web       # Browser
 - Progressions-Vorschlag (`src/lib/progression.ts`): regelbasierte (keine ML-Blackbox) Logik, die aus der letzten Session pro Übung ein Gewicht/Wdh.-Ziel für heute vorschlägt
 - Trainings-Verlauf (`workout/history.tsx`): Woche/Monat/Jahr umschaltbares Liniendiagramm der Trainingsdauer + Liste vergangener Sessions (Datum, Dauer, Volumen, Sätze)
 - Trainingsplan bearbeiten (`workout/edit.tsx`): neue Übungen zu einer Routine hinzufügen oder entfernen, komplett neue Routine anlegen (z. B. bei einem Split-Wechsel) oder eine löschen
+- Sessions werden erst ab 5 Minuten Trainingszeit im Verlauf gespeichert, damit versehentlich geöffnete Workouts Volumen und Streak nicht verwässern
+
+**Cardio** (`workout/cardio.tsx`, `src/lib/cardio.ts`)
+- Gerät, Intensität und Dauer ergeben eine MET-basierte **Netto**-Schätzung: der Ruheumsatz wird abgezogen, weil er bereits im Tagesziel steckt
+- Genau deshalb liegt die Schätzung meist deutlich unter der Geräteanzeige — die Anzeige rechnet den Grundumsatz mit und geht oft von einer schwereren Standardperson aus. Der eingegebene Gerätewert dient nur als Vergleich
+- Foto vom Gerätedisplay übernimmt Dauer und angezeigte kcal (Erkennung noch simuliert, wie beim Essens-Scan)
 
 **Ernährung**
 - Tagesprotokoll nach Mahlzeit, Einträge lassen sich wieder löschen; die Tagestotale (Dashboard-Ring, Makro-Leisten) sind aus den echten Einträgen abgeleitet, nicht mehr fest verdrahtet
@@ -124,6 +136,9 @@ npm run web       # Browser
 - Basis-Mahlzeiten: 4 vordefinierte Kombis (z. B. "Hähnchen & Reis"), ein Tap loggt sie direkt zur passenden Tageszeit
 - Lebensmittelsuche mit Mengen-/Makro-Vorschau
 - Foto-Scan-Flow (echter Kamera-/Galerie-Zugriff über `expo-image-picker`, Mahlzeit-Auswahl vor dem Bestätigen; die Erkennung selbst ist aktuell eine Mock-Antwort — für echte Ergebnisse braucht es eine Supabase Edge Function, die das Foto an ein Vision-Modell schickt)
+- Lebensmittel-Datenbank mit ~130 Einträgen; die Suche ist umlauttolerant ("hahnchen" findet "Hähnchenbrust") und sortiert Treffer am Wortanfang zuerst
+- Getränke-Tracking mit Tagesziel — Wasser genauso wie kalorienhaltige Drinks (Cola, Monster, Saft), plus drei Trink-Erinnerungen über den Tag
+- Basis-Mahlzeiten lassen sich selbst anlegen (Name, Menge, Makros, Ziel-Mahlzeit) und wieder löschen
 
 **Phasen**
 - Cutting (2.250 kcal), Bulking bewusst als **lean** ausgelegt (~+8% über TDEE statt eines klassischen dirty bulk, 2.850 kcal) und Maintenance (2.650 kcal) — Protein bleibt in allen drei Phasen bei 144 g
@@ -131,6 +146,10 @@ npm run web       # Browser
 
 **Fortschritt & Motivation**
 - Körpergewicht eintragen direkt im Fortschritts-Screen, neuer Wert erscheint sofort in der Kurve
+- Schritte & Schlaf aus Apple Health bzw. Health Connect (inkl. gekoppelter Uhr) — die Integrationsschicht liegt in `src/lib/health.ts`. **Achtung:** der eigentliche Datenzugriff braucht ein natives Modul, das nur in einem echten Dev-Build läuft; bis dahin zeigt die Karte klar gekennzeichnete Beispieldaten
+- Splash-Screen beim Start mit eigenem Logo (Hantel im Kalorien-Ring) und "powered by Emil Salomon"
+- Der Kalorien-Ring rollt sich beim Öffnen von 0 auf den aktuellen Stand auf, die Zahl in der Mitte zählt mit; Karten blenden gestaffelt ein
+- Streak-Kacheln sind antippbar und erklären in einem Detail-Dialog, wie die jeweilige Serie zustande kommt
 - Trainings- & Log-Streak, farbig hinterlegte Achievement-Chips, Gradient-CTAs (`GradientButton`, `expo-linear-gradient`) statt flacher Buttons, Gradient-Stroke im Kalorien-Ring
 - Zitat des Tages auf dem Dashboard: kuratierte, mit Quelle versehene Liste (`demoData.dailyQuotes`), rotiert deterministisch pro Kalendertag — bewusst kein generisches Motivationsposter
 
@@ -140,6 +159,7 @@ npm run web       # Browser
 - Kreatin-Erinnerung, 9 Uhr
 - "Pause vorbei" — feuert auch im Hintergrund, sobald der Pausentimer abläuft; wird bei Skip/±15s neu geplant bzw. storniert
 - Täglicher Tracking-Reminder, 20 Uhr
+- Trink-Erinnerungen um 10:30, 14:00 und 17:30 Uhr
 
 Alle Uhrzeiten sind aktuell feste Zeitpunkte. Lokale Benachrichtigungen
 funktionieren zum Testen in Expo Go; für zuverlässige Zustellung in
@@ -152,6 +172,8 @@ Alles oben läuft lokal über Zustand-Stores und Beispieldaten
 echte Supabase-Queries/-Mutationen zu ersetzen (Auth, Live-Daten, Sync
 zwischen Geräten), plus:
 
-- Foto-Scan an ein echtes Vision-Modell anbinden (Supabase Edge Function)
+- Foto-Scan (Essen und Cardio-Display) an ein echtes Vision-Modell anbinden (Supabase Edge Function)
+- Health-Integration mit nativem Modul in einem Dev-Build fertigstellen und testen
+- Lebensmittel-Datenbank an Open Food Facts o. Ä. anbinden, inkl. Barcode-Scan
 - Tracking-Reminder intelligent machen (nur erinnern, wenn wirklich noch nichts geloggt wurde)
 - Die genauen Routine-Namen aus Hevy übernehmen (aktuell generische Labels "Push"/"Pull")
