@@ -373,3 +373,42 @@ export function buildWeeklySummaryText(): string {
   const sign = w.weightChangeKg <= 0 ? '' : '+';
   return `${w.workoutsCompleted}/${w.workoutsPlanned} Workouts erledigt · Volumen ${sign}${w.volumeChangePct}% ggü. letzter Woche · Gewicht ${sign}${w.weightChangeKg.toFixed(1)} kg · Protein-Ziel an ${w.avgProteinAdherencePct}% der Tage erreicht. Weiter so! 🔥`;
 }
+
+// Trainingsdauer je Woche (Stunden) für den Verlauf-Screen — analog zur
+// "Letzte 3 Monate"-Grafik im Hevy-Profil.
+export const weeklyTrainingHours: { label: string; hours: number }[] = [
+  { label: 'KW 1', hours: 3.6 },
+  { label: 'KW 2', hours: 4.0 },
+  { label: 'KW 3', hours: 3.3 },
+  { label: 'KW 4', hours: 4.2 },
+  { label: 'KW 5', hours: 3.8 },
+  { label: 'KW 6', hours: 4.1 },
+  { label: 'KW 7', hours: 3.5 },
+  { label: 'KW 8', hours: 4.0 },
+];
+
+// Aus deinem echten Hevy-Profil: 72 geloggte Workouts insgesamt.
+export const totalWorkoutsLogged = 72;
+
+export interface DemoHistorySession {
+  id: string;
+  date: string;
+  dayId: string;
+  dayLabel: string;
+  durationMin: number;
+  volumeKg: number;
+  setsCompleted: number;
+  setsPlanned: number;
+}
+
+// Letzte Sessions für den Verlauf-Screen (neueste zuerst).
+export const workoutHistory: DemoHistorySession[] = [
+  { id: 'h1', date: 'Di, 11. Aug', dayId: 'pull', dayLabel: 'Pull', durationMin: 62, volumeKg: 3480, setsCompleted: 24, setsPlanned: 24 },
+  { id: 'h2', date: 'Mo, 10. Aug', dayId: 'push', dayLabel: 'Push', durationMin: 55, volumeKg: 3120, setsCompleted: 19, setsPlanned: 19 },
+  { id: 'h3', date: 'Sa, 8. Aug', dayId: 'pull', dayLabel: 'Pull', durationMin: 64, volumeKg: 3410, setsCompleted: 23, setsPlanned: 24 },
+  { id: 'h4', date: 'Fr, 7. Aug', dayId: 'push', dayLabel: 'Push', durationMin: 58, volumeKg: 3050, setsCompleted: 19, setsPlanned: 19 },
+  { id: 'h5', date: 'Di, 4. Aug', dayId: 'pull', dayLabel: 'Pull', durationMin: 60, volumeKg: 3350, setsCompleted: 24, setsPlanned: 24 },
+  { id: 'h6', date: 'Mo, 3. Aug', dayId: 'push', dayLabel: 'Push', durationMin: 53, volumeKg: 2980, setsCompleted: 18, setsPlanned: 19 },
+  { id: 'h7', date: 'Sa, 1. Aug', dayId: 'pull', dayLabel: 'Pull', durationMin: 65, volumeKg: 3300, setsCompleted: 23, setsPlanned: 24 },
+  { id: 'h8', date: 'Fr, 31. Jul', dayId: 'push', dayLabel: 'Push', durationMin: 57, volumeKg: 3100, setsCompleted: 19, setsPlanned: 19 },
+];

@@ -14,7 +14,13 @@ export default function WorkoutsScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.routineName}>{routineName}</Text>
+        <View style={styles.headerTopRow}>
+          <Text style={styles.routineName}>{routineName}</Text>
+          <Pressable style={styles.historyBtn} onPress={() => router.push('/workout/history')} hitSlop={8}>
+            <Ionicons name="time-outline" size={14} color={colors.secondaryLabel} />
+            <Text style={styles.historyBtnText}>Verlauf</Text>
+          </Pressable>
+        </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daySwitcher}>
           {routineDays.map((d) => {
             const active = d.id === selectedDayId;
@@ -72,7 +78,15 @@ export default function WorkoutsScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.md, paddingTop: spacing.sm },
-  routineName: { fontSize: 13, color: colors.secondaryLabel, fontWeight: '600', marginBottom: spacing.sm },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  routineName: { fontSize: 13, color: colors.secondaryLabel, fontWeight: '600' },
+  historyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  historyBtnText: { fontSize: 12.5, color: colors.secondaryLabel, fontWeight: '600' },
   daySwitcher: { gap: spacing.sm, paddingBottom: spacing.sm },
   dayChip: {
     paddingHorizontal: spacing.md,

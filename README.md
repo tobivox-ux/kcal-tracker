@@ -28,7 +28,9 @@ app/                          Expo-Router-Screens (dateibasiertes Routing)
     workouts.tsx                  Umschalter Push/Pull + Übungsübersicht
     nutrition.tsx                  Essensprotokoll nach Mahlzeit + Foto-Scan-Einstieg
     progress.tsx                    Wochenrückblick + Körpergewichts-Kurve
-  workout/session.tsx          Aktives Workout: Satz-Logging (Gewicht/Wdh./abgehakt)
+  workout/
+    session.tsx                  Aktives Workout: Satz-Logging, Pausentimer, PR-Erkennung
+    history.tsx                   Trainings-Verlauf: Wochen-Dauer-Chart + Sessions
   nutrition/
     add-food.tsx                Lebensmittelsuche + Mengenauswahl
     scan.tsx                     Foto-Scan-Flow (Kamera/Galerie -> KI-Schätzung)
@@ -92,6 +94,7 @@ npm run web       # Browser
 - **Pausentimer & Session-Stoppuhr:** startet automatisch beim Abhaken eines Satzes (Dauer pro Übung aus Hevy übernommen), mit +15s/-15s/Skip; Gesamt-Session-Zeit läuft im Header mit
 - **PR-Erkennung:** kleine Animation (💪) direkt am Satz, wenn Gewicht oder Wdh. die letzte Session übertreffen
 - **Progressions-Vorschlag:** `src/lib/progression.ts` — regelbasierte (keine ML-Blackbox) Logik, die aus der letzten Session pro Übung ein Gewicht/Wdh.-Ziel für heute vorschlägt; auf dem Workouts-Screen und in der aktiven Session sichtbar
+- **Trainings-Verlauf:** eigener Screen (`workout/history.tsx`) mit Wochen-Dauer-Chart der letzten 8 Wochen und einer Liste vergangener Sessions (Datum, Dauer, Volumen, Sätze) — Zugang über "Verlauf" oben im Workouts-Tab
 - **Ernährung:** Tagesprotokoll nach Mahlzeit, Lebensmittelsuche mit Mengen-/Makro-Vorschau, Foto-Scan-Flow (echter Kamera-/Galerie-Zugriff über `expo-image-picker`; die Erkennung selbst ist aktuell eine Mock-Antwort — für echte Ergebnisse braucht es eine Supabase Edge Function, die das Foto an ein Vision-Modell schickt)
 - **Phasen:** Cutting/Bulking/Maintenance mit automatisch angepassten Kalorien-/Makrozielen (DB-Trigger)
 - **Motivation:** Trainings- & Log-Streak, PR-Badges, Achievement-Chips, wöchentliche Sonntags-Benachrichtigung (`expo-notifications`, lokal geplant — für zuverlässige Zustellung in Produktion empfiehlt sich ein Dev-Build statt Expo Go)
