@@ -4,14 +4,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
-import { activePhase, today, todaysMeals } from '../../src/lib/demoData';
+import { MEAL_SECTIONS, baseMeals } from '../../src/lib/demoData';
 import { scheduleDailyTrackingReminder } from '../../src/lib/notifications';
-import type { MealType } from '../../src/types/database';
+import { useNutritionStore, dailyTotalsFromEntries } from '../../src/store/nutritionStore';
+import { useActivePhase } from '../../src/store/phaseStore';
 
 export default function NutritionScreen() {
+  const activePhase = useActivePhase();
+  const entries = useNutritionStore((s) => s.entries);
+  const addEntry = useNutritionStore((s) => s.addEntry);
+  const removeEntry = useNutritionStore((s) => s.removeEntry);
+  const checkMidnightReset = useNutritionStore((s) => s.checkMidnightReset);
+  const today = dailyTotalsFromEntries(entries);
+
   useEffect(() => {
+    checkMidnightReset();
     scheduleDailyTrackingReminder().catch(() => {});
-  }, []);
+  }, [checkMidnightReset]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -43,28 +52,44 @@ export default function NutritionScreen() {
           <Ionicons name="chevron-forward" size={18} color={colors.tertiaryLabel} />
         </Pressable>
 
-        {todaysMeals.map((meal) => {
-          const mealCalories = meal.entries.reduce((sum, e) => sum + e.calories, 0);
+        <Text style={styles.sectionLabel}>⭐ Basis-Mahlzeiten</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.baseScroll}>
+          {baseMeals.map((bm) => (
+            <Pressable
+              key={bm.id}
+              style={styles.baseCard}
+              onPress={() => addEntry(bm.defaultMeal, bm)}
+            >
+              <Text style={styles.baseEmoji}>{bm.emoji}</Text>
+              <Text style={styles.baseName} numberOfLines={2}>{bm.name}</Text>
+              <Text style={styles.baseMeta}>{bm.calories} kcal · {bm.proteinG}g P</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        {MEAL_SECTIONS.map((section) => {
+          const mealEntries = entries[section.meal];
+          const mealCalories = mealEntries.reduce((sum, e) => sum + e.calories, 0);
           return (
-            <View key={meal.meal} style={styles.mealCard}>
+            <View key={section.meal} style={styles.mealCard}>
               <View style={styles.mealHeaderRow}>
-                <Text style={styles.mealLabel}>{meal.label}</Text>
+                <Text style={styles.mealLabel}>{section.label}</Text>
                 <View style={styles.mealHeaderRight}>
                   {mealCalories > 0 && <Text style={styles.mealCalories}>{mealCalories} kcal</Text>}
                   <Pressable
                     style={styles.addButton}
-                    onPress={() => router.push(`/nutrition/add-food?meal=${meal.meal satisfies MealType}`)}
+                    onPress={() => router.push(`/nutrition/add-food?meal=${section.meal}`)}
                   >
                     <Ionicons name="add" size={18} color={colors.tint} />
                   </Pressable>
                 </View>
               </View>
-              {meal.entries.length === 0 ? (
+              {mealEntries.length === 0 ? (
                 <Text style={styles.emptyText}>Noch nichts geloggt</Text>
               ) : (
-                meal.entries.map((entry) => (
-                  <View key={entry.name} style={styles.entryRow}>
-                    <View>
+                mealEntries.map((entry) => (
+                  <View key={entry.id} style={styles.entryRow}>
+                    <View style={{ flex: 1 }}>
                       <Text style={styles.entryName}>{entry.name}</Text>
                       <Text style={styles.entryQuantity}>{entry.quantity}</Text>
                     </View>
@@ -72,6 +97,13 @@ export default function NutritionScreen() {
                       <Text style={styles.entryCalories}>{entry.calories} kcal</Text>
                       <Text style={styles.entryProtein}>{entry.proteinG}g Protein</Text>
                     </View>
+                    <Pressable
+                      style={styles.deleteButton}
+                      onPress={() => removeEntry(section.meal, entry.id)}
+                      hitSlop={8}
+                    >
+                      <Ionicons name="trash-outline" size={15} color={colors.tertiaryLabel} />
+                    </Pressable>
                   </View>
                 ))
               )}
@@ -153,6 +185,19 @@ const styles = StyleSheet.create({
   },
   scanTitle: { fontSize: 14.5, fontWeight: '700', color: colors.label },
   scanSubtitle: { fontSize: 11.5, color: colors.secondaryLabel, marginTop: 1 },
+  sectionLabel: { fontSize: 13.5, fontWeight: '700', color: colors.label, marginBottom: spacing.sm },
+  baseScroll: { gap: spacing.sm, paddingBottom: spacing.md },
+  baseCard: {
+    width: 108,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.sm + 2,
+  },
+  baseEmoji: { fontSize: 20, marginBottom: 6 },
+  baseName: { fontSize: 12.5, fontWeight: '700', color: colors.label, lineHeight: 16 },
+  baseMeta: { fontSize: 10.5, color: colors.secondaryLabel, marginTop: 4 },
   mealCard: {
     backgroundColor: colors.card,
     borderWidth: 1,
@@ -176,7 +221,6 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 13, color: colors.tertiaryLabel, marginTop: spacing.sm, fontStyle: 'italic' },
   entryRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: spacing.sm,
     paddingTop: spacing.sm,
@@ -185,7 +229,8 @@ const styles = StyleSheet.create({
   },
   entryName: { fontSize: 14, fontWeight: '600', color: colors.label },
   entryQuantity: { fontSize: 12, color: colors.secondaryLabel, marginTop: 1 },
-  entryMacros: { alignItems: 'flex-end' },
+  entryMacros: { alignItems: 'flex-end', marginRight: spacing.sm },
   entryCalories: { fontSize: 13, fontWeight: '600', color: colors.label },
   entryProtein: { fontSize: 11, color: colors.protein, marginTop: 1, fontWeight: '600' },
+  deleteButton: { padding: 4 },
 });

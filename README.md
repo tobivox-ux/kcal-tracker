@@ -8,8 +8,9 @@ Push/Pull-Split, Makro-Tracking mit Fokus auf hohem Protein, und Phasen
 
 - **Frontend:** [Expo](https://expo.dev) (React Native + TypeScript), [Expo Router](https://docs.expo.dev/router/introduction/) für dateibasierte Navigation
 - **Backend:** [Supabase](https://supabase.com) (Postgres + Auth + Row Level Security)
-- **State/Data:** [TanStack Query](https://tanstack.com/query) für Server-State, [Zustand](https://zustand-demo.pmnd.rs/) für lokalen UI-State
-- **Charts:** [react-native-gifted-charts](https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts) + eigene SVG-Ring-/Balken-Komponenten
+- **State/Data:** [TanStack Query](https://tanstack.com/query) für späteren Server-State, [Zustand](https://zustand-demo.pmnd.rs/) für den lokalen App-State (Ernährung, Trainingsplan, Phase, Körpergewicht — siehe `src/store/`)
+- **Charts:** [react-native-gifted-charts](https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts) + eigene SVG-Ring-Komponente
+- **Sonstiges:** `expo-notifications` (lokale Benachrichtigungen), `expo-image-picker` (Kamera/Galerie), `expo-linear-gradient` (Gradient-Buttons)
 
 Warum diese Kombination: Expo deckt iOS/Android/Web aus einer Codebasis ab,
 ohne dass native Xcode/Android-Studio-Toolchains nötig sind. Supabase liefert
@@ -21,31 +22,48 @@ Row-Level-Security, ohne einen eigenen Server betreiben zu müssen.
 
 ```
 app/                          Expo-Router-Screens (dateibasiertes Routing)
-  _layout.tsx                  Root-Layout (Providers, Stack)
+  _layout.tsx                  Root-Layout (Providers, Stack, Mitternachts-Reset-Timer)
+  phase-select.tsx              Phase wechseln (Cutting/Bulking/Maintenance)
   (tabs)/
     _layout.tsx                 Tab-Navigator
-    index.tsx                    Dashboard (Phase, Kalorien-Ring, Makros, Streaks, Erfolge)
-    workouts.tsx                  Umschalter Push/Pull + Übungsübersicht
-    nutrition.tsx                  Essensprotokoll nach Mahlzeit + Foto-Scan-Einstieg
-    progress.tsx                    Wochenrückblick + Körpergewichts-Kurve
+    index.tsx                    Dashboard (Phase, Kalorien-Ring, Makros, Streaks, Erfolge, Zitat des Tages)
+    workouts.tsx                  Umschalter Push/Pull + Übungsübersicht + Zugang zu Verlauf/Bearbeiten
+    nutrition.tsx                  Essensprotokoll nach Mahlzeit, Basis-Mahlzeiten, Foto-Scan-Einstieg
+    progress.tsx                    Wochenrückblick + Körpergewichts-Kurve (mit Eintrage-Funktion)
   workout/
     session.tsx                  Aktives Workout: Satz-Logging, Pausentimer, PR-Erkennung
-    history.tsx                   Trainings-Verlauf: Wochen-Dauer-Chart + Sessions
+    history.tsx                   Trainings-Verlauf: Woche/Monat/Jahr-Liniendiagramm + Sessions
+    edit.tsx                      Trainingsplan bearbeiten: Übungen/Routinen hinzufügen & entfernen
   nutrition/
     add-food.tsx                Lebensmittelsuche + Mengenauswahl
-    scan.tsx                     Foto-Scan-Flow (Kamera/Galerie -> KI-Schätzung)
+    scan.tsx                     Foto-Scan-Flow (Kamera/Galerie -> KI-Schätzung) + Mahlzeit-Auswahl
 src/
-  components/                  Wiederverwendbare UI-Bausteine
+  components/                  Wiederverwendbare UI-Bausteine (u.a. GradientButton, ProgressRing)
+  store/                        Zustand-Stores für den App-State (siehe unten)
   lib/
     supabase.ts                 Supabase-Client
-    demoData.ts                  Trainingsplan (echt, aus Hevy) + Ernährungs-/Phasen-Platzhalter
+    demoData.ts                  Trainingsplan (echt, aus Hevy) + Ernährungs-/Phasen-/Zitate-Seeds
     progression.ts                Regelbasierter Gewicht-/Wdh.-Vorschlag pro Übung
-    notifications.ts             Sonntags-Benachrichtigung mit Wochenrückblick
+    notifications.ts             Alle lokalen Benachrichtigungen (siehe unten)
   theme/                        Farb-/Spacing-Tokens (dunkles Theme, kräftiger Akzent)
   types/database.ts            TypeScript-Typen passend zum SQL-Schema
 supabase/
   migrations/0001_init.sql     Vollständiges DB-Schema inkl. Row Level Security
 ```
+
+### State-Stores (`src/store/`)
+
+Bis das Supabase-Backend angebunden ist, hält Zustand den tatsächlichen
+App-Zustand (nicht nur Anzeige-Demo-Daten) — Hinzufügen/Löschen/Bearbeiten
+wirkt sich wirklich aus und spiegelt sich sofort in allen Screens, die
+denselben Store lesen:
+
+| Store | Zweck |
+|---|---|
+| `nutritionStore.ts` | Geloggte Mahlzeiten pro Tag; `addEntry`/`removeEntry`; setzt sich automatisch um Mitternacht zurück |
+| `phaseStore.ts` | Aktive Phase (Cutting/Bulking/Maintenance); steuert Kalorien-/Makroziele auf Dashboard & Ernährung |
+| `routineStore.ts` | Trainingsplan (Routinen + Übungen); Übungen/Routinen hinzufügen oder entfernen |
+| `bodyWeightStore.ts` | Körpergewichts-Verlauf für die Kurve im Fortschritts-Screen |
 
 ## Datenbank-Schema
 
@@ -64,7 +82,8 @@ Kern-Tabellen (siehe `supabase/migrations/0001_init.sql` für Details, Constrain
 
 Aktiviert man eine neue Phase, deaktiviert ein Datenbank-Trigger automatisch
 die vorherige — dadurch stellt die App die Tagesziele beim Phasenwechsel ohne
-zusätzlichen App-Code um.
+zusätzlichen App-Code um. Die Zustand-Stores oben bilden dieses Verhalten
+lokal nach, bis die App wirklich gegen Supabase läuft.
 
 ## Setup
 
@@ -90,25 +109,49 @@ npm run web       # Browser
 
 ## Features im aktuellen Stand
 
-- **Workout-Logging:** Push (7 Übungen) und Pull (9 Übungen) — echter Trainingsplan aus Hevy, je 2x/Woche trainiert, umschaltbar; aktive Session mit editierbarem Gewicht/Wdh. pro Satz, Sätze abhaken oder hinzufügen
-- **Pausentimer & Session-Stoppuhr:** startet automatisch beim Abhaken eines Satzes (Dauer pro Übung aus Hevy übernommen), mit +15s/-15s/Skip; Gesamt-Session-Zeit läuft im Header mit
-- **PR-Erkennung:** kleine Animation (💪) direkt am Satz, wenn Gewicht oder Wdh. die letzte Session übertreffen
-- **Progressions-Vorschlag:** `src/lib/progression.ts` — regelbasierte (keine ML-Blackbox) Logik, die aus der letzten Session pro Übung ein Gewicht/Wdh.-Ziel für heute vorschlägt; auf dem Workouts-Screen und in der aktiven Session sichtbar
-- **Trainings-Verlauf:** eigener Screen (`workout/history.tsx`) mit Wochen-Dauer-Chart der letzten 8 Wochen und einer Liste vergangener Sessions (Datum, Dauer, Volumen, Sätze) — Zugang über "Verlauf" oben im Workouts-Tab
-- **Ernährung:** Tagesprotokoll nach Mahlzeit, Lebensmittelsuche mit Mengen-/Makro-Vorschau, Foto-Scan-Flow (echter Kamera-/Galerie-Zugriff über `expo-image-picker`; die Erkennung selbst ist aktuell eine Mock-Antwort — für echte Ergebnisse braucht es eine Supabase Edge Function, die das Foto an ein Vision-Modell schickt)
-- **Phasen:** Cutting/Bulking/Maintenance mit automatisch angepassten Kalorien-/Makrozielen (DB-Trigger)
-- **Motivation:** Trainings- & Log-Streak, farbig hinterlegte Achievement-Chips, Gradient-CTAs (`GradientButton`, `expo-linear-gradient`) statt flacher Buttons, Gradient-Stroke im Kalorien-Ring — insgesamt bewusst kräftiger/fröhlicher statt nur ein Akzentton
-- **Benachrichtigungen** (`src/lib/notifications.ts`, `expo-notifications`):
-  - Wöchentlicher Sonntags-Rückblick (lokal geplant, für zuverlässige Zustellung in Produktion empfiehlt sich ein Dev-Build statt Expo Go)
-  - "Pause vorbei" — feuert auch im Hintergrund, sobald der Pausentimer abläuft; wird bei Skip/±15s neu geplant bzw. storniert
-  - Täglicher Tracking-Reminder abends (20 Uhr) — aktuell ein fester Zeitpunkt; für echtes "nur erinnern wenn noch nicht geloggt" braucht es einen Abgleich mit den Supabase-Logs
+**Workout**
+- Push (7 Übungen) und Pull (9 Übungen) — echter Trainingsplan aus Hevy, je 2x/Woche trainiert, umschaltbar; bewusst ohne Bein-Tag (mit dem Nutzer abgestimmt)
+- Aktive Session mit editierbarem Gewicht/Wdh. pro Satz, Sätze abhaken oder hinzufügen
+- Pausentimer & Session-Stoppuhr: startet automatisch beim Abhaken eines Satzes (Dauer pro Übung aus Hevy übernommen), mit +15s/-15s/Skip
+- PR-Erkennung: kleine Animation (💪) direkt am Satz, wenn Gewicht oder Wdh. die letzte Session übertreffen
+- Progressions-Vorschlag (`src/lib/progression.ts`): regelbasierte (keine ML-Blackbox) Logik, die aus der letzten Session pro Übung ein Gewicht/Wdh.-Ziel für heute vorschlägt
+- Trainings-Verlauf (`workout/history.tsx`): Woche/Monat/Jahr umschaltbares Liniendiagramm der Trainingsdauer + Liste vergangener Sessions (Datum, Dauer, Volumen, Sätze)
+- Trainingsplan bearbeiten (`workout/edit.tsx`): neue Übungen zu einer Routine hinzufügen oder entfernen, komplett neue Routine anlegen (z. B. bei einem Split-Wechsel) oder eine löschen
 
-Der Trainingsplan (`routineDays` in `src/lib/demoData.ts`) ist bereits echt —
-1:1 aus Hevy-Screenshots übernommen (Übung, Sätze, Wdh., Gewicht der letzten
-Session), bewusst ohne Bein-Tag (mit dem Nutzer abgestimmt). Offen dabei: die
-genauen Routine-Namen aus Hevy statt der generischen Labels "Push"/"Pull".
+**Ernährung**
+- Tagesprotokoll nach Mahlzeit, Einträge lassen sich wieder löschen; die Tagestotale (Dashboard-Ring, Makro-Leisten) sind aus den echten Einträgen abgeleitet, nicht mehr fest verdrahtet
+- Setzt sich automatisch um Mitternacht zurück (`nutritionStore.scheduleMidnightReset`)
+- Basis-Mahlzeiten: 4 vordefinierte Kombis (z. B. "Hähnchen & Reis"), ein Tap loggt sie direkt zur passenden Tageszeit
+- Lebensmittelsuche mit Mengen-/Makro-Vorschau
+- Foto-Scan-Flow (echter Kamera-/Galerie-Zugriff über `expo-image-picker`, Mahlzeit-Auswahl vor dem Bestätigen; die Erkennung selbst ist aktuell eine Mock-Antwort — für echte Ergebnisse braucht es eine Supabase Edge Function, die das Foto an ein Vision-Modell schickt)
 
-Ernährungs-/Phasen-Zahlen sowie alle Screens laufen weiterhin mit
-Beispieldaten aus `src/lib/demoData.ts`, bis ein Supabase-Projekt verbunden
-ist. Als Nächstes: Supabase-Queries/-Mutationen an die Screens anbinden
-(Auth, Live-Daten statt Demo-Daten).
+**Phasen**
+- Cutting (2.250 kcal), Bulking bewusst als **lean** ausgelegt (~+8% über TDEE statt eines klassischen dirty bulk, 2.850 kcal) und Maintenance (2.650 kcal) — Protein bleibt in allen drei Phasen bei 144 g
+- Phase wechseln über Tap auf das Phase-Badge auf dem Dashboard (`app/phase-select.tsx`); Kalorien-/Makroziele passen sich sofort überall an
+
+**Fortschritt & Motivation**
+- Körpergewicht eintragen direkt im Fortschritts-Screen, neuer Wert erscheint sofort in der Kurve
+- Trainings- & Log-Streak, farbig hinterlegte Achievement-Chips, Gradient-CTAs (`GradientButton`, `expo-linear-gradient`) statt flacher Buttons, Gradient-Stroke im Kalorien-Ring
+- Zitat des Tages auf dem Dashboard: kuratierte, mit Quelle versehene Liste (`demoData.dailyQuotes`), rotiert deterministisch pro Kalendertag — bewusst kein generisches Motivationsposter
+
+**Benachrichtigungen** (`src/lib/notifications.ts`, `expo-notifications`)
+- Wöchentlicher Sonntags-Rückblick, 18 Uhr
+- Morgendliche Wiege-Erinnerung, 7:30 Uhr
+- Kreatin-Erinnerung, 9 Uhr
+- "Pause vorbei" — feuert auch im Hintergrund, sobald der Pausentimer abläuft; wird bei Skip/±15s neu geplant bzw. storniert
+- Täglicher Tracking-Reminder, 20 Uhr
+
+Alle Uhrzeiten sind aktuell feste Zeitpunkte. Lokale Benachrichtigungen
+funktionieren zum Testen in Expo Go; für zuverlässige Zustellung in
+Produktion empfiehlt sich ein Dev-Build.
+
+## Als Nächstes
+
+Alles oben läuft lokal über Zustand-Stores und Beispieldaten
+(`src/lib/demoData.ts`). Der nächste große Schritt ist, die Stores durch
+echte Supabase-Queries/-Mutationen zu ersetzen (Auth, Live-Daten, Sync
+zwischen Geräten), plus:
+
+- Foto-Scan an ein echtes Vision-Modell anbinden (Supabase Edge Function)
+- Tracking-Reminder intelligent machen (nur erinnern, wenn wirklich noch nichts geloggt wurde)
+- Die genauen Routine-Namen aus Hevy übernehmen (aktuell generische Labels "Push"/"Pull")

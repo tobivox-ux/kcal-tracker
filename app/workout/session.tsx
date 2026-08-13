@@ -4,9 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
-import { routineDays, type DemoSet } from '../../src/lib/demoData';
+import { type DemoSet } from '../../src/lib/demoData';
 import { suggestNextSession } from '../../src/lib/progression';
 import { scheduleRestTimerNotification, cancelRestTimerNotification } from '../../src/lib/notifications';
+import { useRoutineStore } from '../../src/store/routineStore';
 import { GradientButton } from '../../src/components/GradientButton';
 
 interface ExerciseState {
@@ -25,6 +26,7 @@ function formatClock(totalSeconds: number): string {
 
 export default function WorkoutSessionScreen() {
   const { day: dayId } = useLocalSearchParams<{ day: string }>();
+  const routineDays = useRoutineStore((s) => s.routines);
   const day = routineDays.find((d) => d.id === dayId) ?? routineDays[0];
 
   // Unveränderte Momentaufnahme der letzten Session — Basis für

@@ -5,9 +5,20 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { colors, radius, spacing } from '../../src/theme/colors';
+import { MEAL_SECTIONS } from '../../src/lib/demoData';
+import { useNutritionStore } from '../../src/store/nutritionStore';
 import { GradientButton } from '../../src/components/GradientButton';
+import type { MealType } from '../../src/types/database';
 
 type Step = 'idle' | 'analyzing' | 'result';
+
+function defaultMealForNow(): MealType {
+  const h = new Date().getHours();
+  if (h < 11) return 'breakfast';
+  if (h < 16) return 'lunch';
+  if (h < 21) return 'dinner';
+  return 'snack';
+}
 
 // Demo-Schätzung, die nach ein paar Sekunden "erkannt" wird. In echt ruft
 // dieser Schritt eine Supabase Edge Function auf, die das Foto an ein
@@ -22,9 +33,11 @@ const MOCK_RESULT = {
 };
 
 export default function ScanFoodScreen() {
+  const addEntry = useNutritionStore((s) => s.addEntry);
   const [step, setStep] = useState<Step>('idle');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [result, setResult] = useState(MOCK_RESULT);
+  const [meal, setMeal] = useState<MealType>(defaultMealForNow());
 
   async function pickImage(source: 'camera' | 'library') {
     const permission =
@@ -106,10 +119,36 @@ export default function ScanFoodScreen() {
             <EditableMacro label="Fett (g)" value={result.fatG} color={colors.fat} onChange={(v) => setResult((r) => ({ ...r, fatG: v }))} />
           </View>
 
+          <Text style={styles.mealPickerLabel}>Zu welcher Mahlzeit?</Text>
+          <View style={styles.mealPickerRow}>
+            {MEAL_SECTIONS.map((s) => (
+              <Pressable
+                key={s.meal}
+                style={[styles.mealChip, meal === s.meal && styles.mealChipActive]}
+                onPress={() => setMeal(s.meal)}
+              >
+                <Text style={[styles.mealChipText, meal === s.meal && styles.mealChipTextActive]}>{s.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+
           <Pressable style={styles.retakeBtn} onPress={() => setStep('idle')}>
             <Text style={styles.retakeText}>Neues Foto</Text>
           </Pressable>
-          <GradientButton label="Eintrag hinzufügen" onPress={() => router.back()} />
+          <GradientButton
+            label="Eintrag hinzufügen"
+            onPress={() => {
+              addEntry(meal, {
+                name: result.label,
+                quantity: '1 Portion (geschätzt)',
+                calories: result.calories,
+                proteinG: result.proteinG,
+                carbsG: result.carbsG,
+                fatG: result.fatG,
+              });
+              router.back();
+            }}
+          />
         </View>
       )}
     </SafeAreaView>
@@ -226,4 +265,18 @@ const styles = StyleSheet.create({
   },
   retakeBtn: { alignItems: 'center', paddingVertical: spacing.sm, marginBottom: spacing.sm },
   retakeText: { fontSize: 13, color: colors.tint, fontWeight: '600' },
+  mealPickerLabel: { fontSize: 12.5, fontWeight: '700', color: colors.secondaryLabel, marginBottom: 8 },
+  mealPickerRow: { flexDirection: 'row', gap: 8, marginBottom: spacing.md },
+  mealChip: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 9,
+    borderRadius: radius.full,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  mealChipActive: { backgroundColor: colors.tint, borderColor: colors.tint },
+  mealChipText: { fontSize: 12, fontWeight: '700', color: colors.secondaryLabel },
+  mealChipTextActive: { color: colors.background },
 });

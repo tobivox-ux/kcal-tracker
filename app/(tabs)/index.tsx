@@ -1,24 +1,30 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { colors, radius, spacing } from '../../src/theme/colors';
 import { ProgressRing } from '../../src/components/ProgressRing';
 import { MacroBar } from '../../src/components/MacroBar';
 import { PhaseBadge } from '../../src/components/PhaseBadge';
 import { StreakBar } from '../../src/components/StreakBar';
 import { AchievementChips } from '../../src/components/AchievementChips';
-import {
-  activePhase,
-  today,
-  routineDays,
-  todaysRoutineDayId,
-  streaks,
-  recentAchievements,
-} from '../../src/lib/demoData';
+import { todaysRoutineDayId, streaks, recentAchievements, getQuoteOfTheDay } from '../../src/lib/demoData';
+import { useNutritionStore, dailyTotalsFromEntries } from '../../src/store/nutritionStore';
+import { useActivePhase } from '../../src/store/phaseStore';
+import { useRoutineStore } from '../../src/store/routineStore';
 
 export default function DashboardScreen() {
+  const activePhase = useActivePhase();
+  const routineDays = useRoutineStore((s) => s.routines);
+  const entries = useNutritionStore((s) => s.entries);
+  const checkMidnightReset = useNutritionStore((s) => s.checkMidnightReset);
+  useEffect(() => {
+    checkMidnightReset();
+  }, [checkMidnightReset]);
+  const today = dailyTotalsFromEntries(entries);
+  const quote = getQuoteOfTheDay();
   const caloriesRemaining = activePhase.calorieTarget - today.caloriesConsumed;
-  const todaysRoutineDay = routineDays.find((d) => d.id === todaysRoutineDayId)!;
+  const todaysRoutineDay = routineDays.find((d) => d.id === todaysRoutineDayId) ?? routineDays[0];
   const isExerciseDone = (ex: (typeof todaysRoutineDay.exercises)[number]) =>
     ex.sets.every((s) => s.done);
   const doneCount = todaysRoutineDay.exercises.filter(isExerciseDone).length;
@@ -32,7 +38,9 @@ export default function DashboardScreen() {
             <Text style={styles.greeting}>Guten Morgen 👋</Text>
             <Text style={styles.date}>Donnerstag, 13. August</Text>
           </View>
-          <PhaseBadge type={activePhase.type} />
+          <Pressable onPress={() => router.push('/phase-select')}>
+            <PhaseBadge type={activePhase.type} />
+          </Pressable>
         </View>
 
         <StreakBar trainingWeeks={streaks.trainingWeeks} loggingDays={streaks.loggingDays} />
@@ -90,6 +98,11 @@ export default function DashboardScreen() {
             </Text>
           </View>
         </Link>
+
+        <View style={styles.quoteCard}>
+          <Text style={styles.quoteText}>„{quote.text}"</Text>
+          <Text style={styles.quoteAuthor}>— {quote.author}</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -141,4 +154,20 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 22, color: colors.tertiaryLabel },
   workoutDayLabel: { fontSize: 20, fontWeight: '700', color: colors.label, marginTop: -4 },
   workoutSubtext: { fontSize: 13, color: colors.secondaryLabel, marginTop: 4 },
+  quoteCard: {
+    paddingTop: spacing.lg,
+    paddingHorizontal: spacing.sm,
+    marginTop: spacing.xs,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+    alignItems: 'center',
+  },
+  quoteText: {
+    fontSize: 13.5,
+    fontStyle: 'italic',
+    color: colors.secondaryLabel,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  quoteAuthor: { fontSize: 11.5, color: colors.tertiaryLabel, marginTop: 6 },
 });

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
-import { routineName, routineDays, todaysRoutineDayId } from '../../src/lib/demoData';
+import { routineName, todaysRoutineDayId } from '../../src/lib/demoData';
 import { suggestNextSession } from '../../src/lib/progression';
+import { useRoutineStore } from '../../src/store/routineStore';
 import { GradientButton } from '../../src/components/GradientButton';
 
 function dayColor(dayId: string) {
@@ -13,18 +14,46 @@ function dayColor(dayId: string) {
 }
 
 export default function WorkoutsScreen() {
+  const routineDays = useRoutineStore((s) => s.routines);
   const [selectedDayId, setSelectedDayId] = useState(todaysRoutineDayId);
-  const day = routineDays.find((d) => d.id === selectedDayId)!;
+
+  useEffect(() => {
+    if (!routineDays.some((d) => d.id === selectedDayId)) {
+      setSelectedDayId(routineDays[0]?.id ?? '');
+    }
+  }, [routineDays, selectedDayId]);
+
+  const day = routineDays.find((d) => d.id === selectedDayId) ?? routineDays[0];
+  if (!day) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateText}>Noch keine Routine angelegt.</Text>
+          <GradientButton label="Routine erstellen" onPress={() => router.push('/workout/edit')} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
           <Text style={styles.routineName}>{routineName}</Text>
-          <Pressable style={styles.historyBtn} onPress={() => router.push('/workout/history')} hitSlop={8}>
-            <Ionicons name="time-outline" size={14} color={colors.secondaryLabel} />
-            <Text style={styles.historyBtnText}>Verlauf</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable style={styles.historyBtn} onPress={() => router.push('/workout/history')} hitSlop={8}>
+              <Ionicons name="time-outline" size={14} color={colors.secondaryLabel} />
+              <Text style={styles.historyBtnText}>Verlauf</Text>
+            </Pressable>
+            <Pressable
+              style={styles.historyBtn}
+              onPress={() => router.push(`/workout/edit?day=${day.id}`)}
+              hitSlop={8}
+            >
+              <Ionicons name="create-outline" size={14} color={colors.secondaryLabel} />
+              <Text style={styles.historyBtnText}>Bearbeiten</Text>
+            </Pressable>
+          </View>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daySwitcher}>
           {routineDays.map((d) => {
@@ -49,6 +78,14 @@ export default function WorkoutsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        {day.exercises.length === 0 && (
+          <View style={styles.emptyRoutine}>
+            <Text style={styles.emptyRoutineText}>Diese Routine hat noch keine Übungen.</Text>
+            <Pressable onPress={() => router.push(`/workout/edit?day=${day.id}`)}>
+              <Text style={styles.emptyRoutineLink}>Übungen hinzufügen →</Text>
+            </Pressable>
+          </View>
+        )}
         {day.exercises.map((exercise, index) => {
           const doneSets = exercise.sets.filter((s) => s.done).length;
           const isDone = doneSets === exercise.sets.length;
@@ -98,8 +135,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   routineName: { fontSize: 13, color: colors.secondaryLabel, fontWeight: '600' },
+  headerActions: { flexDirection: 'row', gap: spacing.md },
   historyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   historyBtnText: { fontSize: 12.5, color: colors.secondaryLabel, fontWeight: '600' },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
+  emptyStateText: { fontSize: 14, color: colors.secondaryLabel, textAlign: 'center' },
+  emptyRoutine: { alignItems: 'center', paddingVertical: spacing.xl, gap: 8 },
+  emptyRoutineText: { fontSize: 13.5, color: colors.secondaryLabel },
+  emptyRoutineLink: { fontSize: 13.5, color: colors.tint, fontWeight: '700' },
   daySwitcher: { gap: spacing.sm, paddingBottom: spacing.sm },
   dayChip: {
     paddingHorizontal: spacing.md,

@@ -9,26 +9,55 @@ import { colors } from '../theme/colors';
 // BMR = 10*72 + 6.25*170 - 5*17 + 5 = 1702.5 kcal
 // TDEE = BMR * 1.55 (moderate Aktivität: ~7.000 Schritte/Tag + 4x
 // Krafttraining/Woche) = 2639 kcal
-// Cutting-Defizit bewusst konservativ (15% statt der für Erwachsene
-// üblichen 20%), da mit 17 potenziell noch im Wachstum -> 2250 kcal.
-// Protein 2.0g/kg (144g), Fett ~26% der Kalorien (65g) für Hormone/
-// Wachstum, Rest als Carbs (272g) für Energie/Regeneration.
-export const activePhase = {
-  name: 'Cutting Phase',
-  type: 'cutting' as PhaseType,
-  calorieTarget: 2250,
-  proteinTargetG: 144,
-  carbsTargetG: 272,
-  fatTargetG: 65,
-};
+//
+// Protein bleibt über alle drei Phasen bei ~2,0 g/kg (144 g) konstant — das
+// war die zentrale Anforderung ("hoher Protein-Fokus"), unabhängig vom Ziel.
+// Nur Kalorien/Fett/Carbs verschieben sich mit der Phase:
+// - Cutting: bewusst konservatives Defizit (15% statt der für Erwachsene
+//   üblichen 20%), da mit 17 potenziell noch im Wachstum -> 2250 kcal.
+// - Bulking: bewusst "lean" gehalten (~+8% über TDEE statt eines klassischen
+//   dirty-bulk-Überschusses von 15-20%+), um den Fettaufbau gering zu
+//   halten -> 2850 kcal.
+// - Maintenance: TDEE selbst, aufgerundet -> 2650 kcal.
+export interface PhaseConfig {
+  type: PhaseType;
+  name: string;
+  description: string;
+  calorieTarget: number;
+  proteinTargetG: number;
+  carbsTargetG: number;
+  fatTargetG: number;
+}
 
-// Muss zur Summe der Einträge in `todaysMeals` weiter unten passen.
-export const today = {
-  caloriesConsumed: 1065,
-  proteinG: 128,
-  carbsG: 88,
-  fatG: 34,
-};
+export const phaseOptions: PhaseConfig[] = [
+  {
+    type: 'cutting',
+    name: 'Cutting Phase',
+    description: 'Konservatives Defizit (~15%), um Muskelmasse beim Abnehmen zu erhalten.',
+    calorieTarget: 2250,
+    proteinTargetG: 144,
+    carbsTargetG: 272,
+    fatTargetG: 65,
+  },
+  {
+    type: 'bulking',
+    name: 'Bulking Phase (Lean)',
+    description: 'Moderater Überschuss (~+8%) statt dirty bulk, damit der Fettaufbau minimal bleibt.',
+    calorieTarget: 2850,
+    proteinTargetG: 144,
+    carbsTargetG: 389,
+    fatTargetG: 80,
+  },
+  {
+    type: 'maintenance',
+    name: 'Maintenance Phase',
+    description: 'Kalorien auf TDEE-Niveau — Gewicht halten, Kraft/Technik in den Fokus stellen.',
+    calorieTarget: 2650,
+    proteinTargetG: 144,
+    carbsTargetG: 361,
+    fatTargetG: 70,
+  },
+];
 
 // Streaks werden aus den Log-Daten abgeleitet (aufeinanderfolgende Tage mit
 // Food-Log-Eintrag bzw. aufeinanderfolgende Wochen mit allen geplanten
@@ -292,23 +321,37 @@ export interface DemoMealEntry {
   quantity: string;
   calories: number;
   proteinG: number;
+  carbsG: number;
+  fatG: number;
 }
 
+// Mahlzeiten-Reihenfolge + Labels, geteilt zwischen Nutrition-Screen und
+// Lebensmittelsuche.
+export const MEAL_SECTIONS: { meal: MealType; label: string }[] = [
+  { meal: 'breakfast', label: 'Frühstück' },
+  { meal: 'lunch', label: 'Mittagessen' },
+  { meal: 'dinner', label: 'Abendessen' },
+  { meal: 'snack', label: 'Snacks' },
+];
+
+// Seed für den Ernährungs-Store (src/store/nutritionStore.ts) — der Store
+// hält den tatsächlichen Tagesstand (hinzufügen/löschen/Mitternachts-Reset),
+// das hier ist nur der Ausgangszustand.
 export const todaysMeals: { meal: MealType; label: string; entries: DemoMealEntry[] }[] = [
   {
     meal: 'breakfast',
     label: 'Frühstück',
     entries: [
-      { name: 'Magerquark', quantity: '250 g', calories: 195, proteinG: 30 },
-      { name: 'Haferflocken', quantity: '60 g', calories: 225, proteinG: 8 },
+      { name: 'Magerquark', quantity: '250 g', calories: 195, proteinG: 30, carbsG: 9, fatG: 1 },
+      { name: 'Haferflocken', quantity: '60 g', calories: 225, proteinG: 8, carbsG: 35, fatG: 4 },
     ],
   },
   {
     meal: 'lunch',
     label: 'Mittagessen',
     entries: [
-      { name: 'Hähnchenbrust', quantity: '200 g', calories: 330, proteinG: 62 },
-      { name: 'Reis (gekocht)', quantity: '150 g', calories: 195, proteinG: 4 },
+      { name: 'Hähnchenbrust', quantity: '200 g', calories: 330, proteinG: 62, carbsG: 0, fatG: 7 },
+      { name: 'Reis (gekocht)', quantity: '150 g', calories: 195, proteinG: 4, carbsG: 42, fatG: 1 },
     ],
   },
   {
@@ -319,7 +362,69 @@ export const todaysMeals: { meal: MealType; label: string; entries: DemoMealEntr
   {
     meal: 'snack',
     label: 'Snacks',
-    entries: [{ name: 'Whey Protein', quantity: '1 Scoop', calories: 120, proteinG: 24 }],
+    entries: [{ name: 'Whey Protein', quantity: '1 Scoop', calories: 120, proteinG: 24, carbsG: 2, fatG: 2 }],
+  },
+];
+
+// Basis-Mahlzeiten zum Ein-Tap-Hinzufügen (immer gleiche Kombis, die oft
+// gegessen werden). defaultMeal ist die Mahlzeit, zu der ein Tap auf der
+// Übersicht sie hinzufügt.
+export interface BaseMeal {
+  id: string;
+  emoji: string;
+  name: string;
+  quantity: string;
+  defaultMeal: MealType;
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
+export const baseMeals: BaseMeal[] = [
+  {
+    id: 'base-quark-oats',
+    emoji: '🥣',
+    name: 'Magerquark & Haferflocken',
+    quantity: '250 g + 60 g',
+    defaultMeal: 'breakfast',
+    calories: 420,
+    proteinG: 38,
+    carbsG: 44,
+    fatG: 5,
+  },
+  {
+    id: 'base-chicken-rice',
+    emoji: '🍗',
+    name: 'Hähnchen & Reis',
+    quantity: '200 g + 150 g',
+    defaultMeal: 'lunch',
+    calories: 525,
+    proteinG: 66,
+    carbsG: 42,
+    fatG: 8,
+  },
+  {
+    id: 'base-whey',
+    emoji: '🥤',
+    name: 'Whey Shake',
+    quantity: '1 Scoop',
+    defaultMeal: 'snack',
+    calories: 120,
+    proteinG: 24,
+    carbsG: 2,
+    fatG: 2,
+  },
+  {
+    id: 'base-eggs-bread',
+    emoji: '🍳',
+    name: 'Eier & Vollkornbrot',
+    quantity: '2 Eier + 60 g',
+    defaultMeal: 'breakfast',
+    calories: 330,
+    proteinG: 21,
+    carbsG: 26,
+    fatG: 15,
   },
 ];
 
@@ -347,7 +452,13 @@ export const foodDatabase: DemoFood[] = [
 ];
 
 // Körpergewichts-Verlauf (kg) für die Gewichtskurve auf dem Fortschritts-Screen.
-export const bodyWeightHistory: { label: string; weightKg: number }[] = [
+// Seed für src/store/bodyWeightStore.ts, das neue Einträge verwaltet.
+export interface DemoWeightEntry {
+  label: string;
+  weightKg: number;
+}
+
+export const bodyWeightHistory: DemoWeightEntry[] = [
   { label: 'KW 1', weightKg: 74.8 },
   { label: 'KW 2', weightKg: 74.5 },
   { label: 'KW 3', weightKg: 74.1 },
@@ -376,8 +487,9 @@ export function buildWeeklySummaryText(): string {
   return `${w.workoutsCompleted}/${w.workoutsPlanned} Workouts erledigt · Volumen ${sign}${w.volumeChangePct}% ggü. letzter Woche · Gewicht ${sign}${w.weightChangeKg.toFixed(1)} kg · Protein-Ziel an ${w.avgProteinAdherencePct}% der Tage erreicht. Weiter so! 🔥`;
 }
 
-// Trainingsdauer je Woche (Stunden) für den Verlauf-Screen — analog zur
-// "Letzte 3 Monate"-Grafik im Hevy-Profil.
+// Trainingsdauer für den Verlauf-Screen, in drei Granularitäten (Woche/
+// Monat/Jahr umschaltbar) — analog zur "Letzte 3 Monate"-Grafik im
+// Hevy-Profil, nur als Liniendiagramm statt Balken.
 export const weeklyTrainingHours: { label: string; hours: number }[] = [
   { label: 'KW 1', hours: 3.6 },
   { label: 'KW 2', hours: 4.0 },
@@ -387,6 +499,20 @@ export const weeklyTrainingHours: { label: string; hours: number }[] = [
   { label: 'KW 6', hours: 4.1 },
   { label: 'KW 7', hours: 3.5 },
   { label: 'KW 8', hours: 4.0 },
+];
+
+export const monthlyTrainingHours: { label: string; hours: number }[] = [
+  { label: 'Mär', hours: 15.2 },
+  { label: 'Apr', hours: 16.8 },
+  { label: 'Mai', hours: 17.5 },
+  { label: 'Jun', hours: 15.9 },
+  { label: 'Jul', hours: 18.2 },
+  { label: 'Aug', hours: 16.4 },
+];
+
+export const yearlyTrainingHours: { label: string; hours: number }[] = [
+  { label: '2025', hours: 187 },
+  { label: '2026', hours: 142 },
 ];
 
 // Aus deinem echten Hevy-Profil: 72 geloggte Workouts insgesamt.
@@ -414,3 +540,30 @@ export const workoutHistory: DemoHistorySession[] = [
   { id: 'h7', date: 'Sa, 1. Aug', dayId: 'pull', dayLabel: 'Pull', durationMin: 65, volumeKg: 3300, setsCompleted: 23, setsPlanned: 24 },
   { id: 'h8', date: 'Fr, 31. Jul', dayId: 'push', dayLabel: 'Push', durationMin: 57, volumeKg: 3100, setsCompleted: 19, setsPlanned: 19 },
 ];
+
+// Zitat des Tages fürs Dashboard — bewusst kuratiert und mit Quelle statt
+// generischer Motivationsposter-Sprüche. Rotiert deterministisch über den
+// Kalendertag (siehe getQuoteOfTheDay), damit es pro Tag stabil ist.
+export interface Quote {
+  text: string;
+  author: string;
+}
+
+export const dailyQuotes: Quote[] = [
+  { text: 'Man wird nicht das, was man sich wünscht, sondern das, was man wiederholt tut.', author: 'Aristoteles' },
+  { text: 'Du wirst es nicht immer wollen. Deshalb heißt es Disziplin und nicht Motivation.', author: 'unbekannt, Gym-Weisheit' },
+  { text: 'Amateure trainieren, bis sie es richtig machen. Profis, bis sie es nicht mehr falsch machen können.', author: 'zugeschrieben' },
+  { text: 'Vergleich ist der Dieb der Freude.', author: 'Theodore Roosevelt' },
+  { text: 'Motivation bringt dich in Gang. Gewohnheit hält dich in Bewegung.', author: 'Jim Ryun' },
+  { text: 'Es gibt keine Abkürzung zu einem Ort, der sich zu erreichen lohnt.', author: 'Beverly Sills' },
+  { text: 'Der einzige Weg raus ist durch.', author: 'unbekannt' },
+  { text: 'Was heute schwer ist, macht dich für das stark, was morgen kommt.', author: 'unbekannt' },
+  { text: 'Konsistenz schlägt Intensität — fast immer.', author: 'unbekannt, Trainingsprinzip' },
+  { text: 'Niemand sieht die Wiederholung Nummer eins. Alle sehen Wiederholung Nummer hundert.', author: 'unbekannt' },
+];
+
+export function getQuoteOfTheDay(date: Date = new Date()): Quote {
+  const start = new Date(date.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((date.getTime() - start.getTime()) / 86400000);
+  return dailyQuotes[dayOfYear % dailyQuotes.length];
+}

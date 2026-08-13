@@ -4,18 +4,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
-import { foodDatabase, type DemoFood } from '../../src/lib/demoData';
+import { foodDatabase, MEAL_SECTIONS, type DemoFood } from '../../src/lib/demoData';
+import { useNutritionStore } from '../../src/store/nutritionStore';
 import { GradientButton } from '../../src/components/GradientButton';
+import type { MealType } from '../../src/types/database';
 
-const MEAL_LABELS: Record<string, string> = {
-  breakfast: 'Frühstück',
-  lunch: 'Mittagessen',
-  dinner: 'Abendessen',
-  snack: 'Snacks',
-};
+const MEAL_LABELS: Record<string, string> = Object.fromEntries(
+  MEAL_SECTIONS.map((s) => [s.meal, s.label])
+);
 
 export default function AddFoodScreen() {
-  const { meal } = useLocalSearchParams<{ meal?: string }>();
+  const { meal } = useLocalSearchParams<{ meal?: MealType }>();
+  const addEntry = useNutritionStore((s) => s.addEntry);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<DemoFood | null>(null);
   const [grams, setGrams] = useState('100');
@@ -107,7 +107,21 @@ export default function AddFoodScreen() {
             <Text style={styles.backToSearchText}>Anderes Lebensmittel wählen</Text>
           </Pressable>
 
-          <GradientButton label={`Zu ${MEAL_LABELS[meal ?? ''] ?? 'Mahlzeit'} hinzufügen`} onPress={() => router.back()} />
+          <GradientButton
+            label={`Zu ${MEAL_LABELS[meal ?? ''] ?? 'Mahlzeit'} hinzufügen`}
+            onPress={() => {
+              if (!meal) return;
+              addEntry(meal, {
+                name: selected.name,
+                quantity: `${qty} g`,
+                calories: Math.round(selected.caloriesPer100g * factor),
+                proteinG: Math.round(selected.proteinPer100g * factor),
+                carbsG: Math.round(selected.carbsPer100g * factor),
+                fatG: Math.round(selected.fatPer100g * factor),
+              });
+              router.back();
+            }}
+          />
         </View>
       )}
     </SafeAreaView>

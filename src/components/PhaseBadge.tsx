@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../theme/colors';
 import type { PhaseType } from '../types/database';
 
@@ -20,6 +21,7 @@ export function PhaseBadge({ type }: { type: PhaseType }) {
     <View style={[styles.badge, { backgroundColor: `${color}20` }]}>
       <View style={[styles.dot, { backgroundColor: color }]} />
       <Text style={[styles.text, { color }]}>{PHASE_LABELS[type]}</Text>
+      <Ionicons name="chevron-down" size={12} color={color} style={{ marginLeft: 3 }} />
     </View>
   );
 }

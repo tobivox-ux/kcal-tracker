@@ -4,6 +4,8 @@ import * as Notifications from 'expo-notifications';
 const WEEKLY_SUMMARY_ID = 'weekly-summary-sunday';
 const REST_TIMER_ID = 'rest-timer-done';
 const DAILY_TRACKING_ID = 'daily-tracking-reminder';
+const MORNING_WEIGH_IN_ID = 'morning-weigh-in';
+const CREATINE_ID = 'creatine-reminder';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -107,5 +109,53 @@ export async function scheduleDailyTrackingReminder() {
       body: 'Vergiss nicht, deine Mahlzeiten und dein Workout heute einzutragen.',
     },
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 20, minute: 0 },
+  });
+}
+
+// Every morning, before the day gets busy: reminder to step on the scale.
+// Weigh-ins are most comparable when taken under the same conditions each
+// day (e.g. fasted, right after waking up), which is why this is a fixed
+// early time rather than tied to when the app happens to be opened.
+export async function scheduleMorningWeighInReminder() {
+  const granted = await requestNotificationPermissions();
+  if (!granted) return;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('weigh-in-reminder', {
+      name: 'Wiege-Erinnerung',
+      importance: Notifications.AndroidImportance.DEFAULT,
+    });
+  }
+
+  await Notifications.cancelScheduledNotificationAsync(MORNING_WEIGH_IN_ID).catch(() => {});
+  await Notifications.scheduleNotificationAsync({
+    identifier: MORNING_WEIGH_IN_ID,
+    content: {
+      title: 'Zeit dich zu wiegen ⚖️',
+      body: 'Für vergleichbare Werte am besten nüchtern, direkt nach dem Aufstehen.',
+    },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 7, minute: 30 },
+  });
+}
+
+export async function scheduleCreatineReminder() {
+  const granted = await requestNotificationPermissions();
+  if (!granted) return;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('creatine-reminder', {
+      name: 'Kreatin-Erinnerung',
+      importance: Notifications.AndroidImportance.DEFAULT,
+    });
+  }
+
+  await Notifications.cancelScheduledNotificationAsync(CREATINE_ID).catch(() => {});
+  await Notifications.scheduleNotificationAsync({
+    identifier: CREATINE_ID,
+    content: {
+      title: 'Kreatin nicht vergessen 💊',
+      body: '5g Kreatin — die Uhrzeit ist egal, nur täglich zählt.',
+    },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 9, minute: 0 },
   });
 }
