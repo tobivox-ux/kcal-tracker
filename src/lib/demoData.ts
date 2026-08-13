@@ -61,6 +61,7 @@ export interface DemoExercise {
   targetSets: number;
   targetReps: string;
   lastWeightKg: number;
+  restSeconds: number;
   sets: DemoSet[];
 }
 
@@ -89,6 +90,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '3-6',
         lastWeightKg: 65,
+        restSeconds: 120,
         sets: [
           { weightKg: 65, reps: 6, done: false },
           { weightKg: 65, reps: 3, done: false },
@@ -100,6 +102,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '8-12',
         lastWeightKg: 28,
+        restSeconds: 120,
         sets: [
           { weightKg: 28, reps: 5, done: false },
           { weightKg: 26, reps: 6, done: false },
@@ -111,6 +114,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '8-12',
         lastWeightKg: 20,
+        restSeconds: 120,
         sets: [
           { weightKg: 20, reps: 9, done: false },
           { weightKg: 20, reps: 9, done: false },
@@ -122,6 +126,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 2,
         targetReps: '10-15',
         lastWeightKg: 32,
+        restSeconds: 120,
         sets: [
           { weightKg: 32, reps: 10, done: false },
           { weightKg: 36, reps: 7, done: false },
@@ -132,6 +137,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '7-9',
         lastWeightKg: 23,
+        restSeconds: 120,
         sets: [
           { weightKg: 23, reps: 9, done: false },
           { weightKg: 23, reps: 7, done: false },
@@ -143,6 +149,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '10-15',
         lastWeightKg: 36,
+        restSeconds: 120,
         sets: [
           { weightKg: 36, reps: 8, done: false },
           { weightKg: 36, reps: 7, done: false },
@@ -154,6 +161,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '12-20',
         lastWeightKg: 14,
+        restSeconds: 120,
         sets: [
           { weightKg: 14, reps: 7, done: false },
           { weightKg: 14, reps: 7, done: false },
@@ -171,6 +179,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '5-7',
         lastWeightKg: 20,
+        restSeconds: 120,
         sets: [
           { weightKg: 20, reps: 6, done: false },
           { weightKg: 20, reps: 7, done: false },
@@ -182,6 +191,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '6-8',
         lastWeightKg: 41,
+        restSeconds: 120,
         sets: [
           { weightKg: 41, reps: 8, done: false },
           { weightKg: 41, reps: 6, done: false },
@@ -193,6 +203,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 2,
         targetReps: '8',
         lastWeightKg: 19.5,
+        restSeconds: 120,
         sets: [
           { weightKg: 19.5, reps: 8, done: false },
           { weightKg: 19.5, reps: 8, done: false },
@@ -203,6 +214,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 2,
         targetReps: '10',
         lastWeightKg: 91,
+        restSeconds: 120,
         sets: [
           { weightKg: 91, reps: 10, done: false },
           { weightKg: 91, reps: 10, done: false },
@@ -213,6 +225,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '6-8',
         lastWeightKg: 86,
+        restSeconds: 120,
         sets: [
           { weightKg: 86, reps: 8, done: false },
           { weightKg: 86, reps: 7, done: false },
@@ -224,6 +237,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '5-8',
         lastWeightKg: 50,
+        restSeconds: 120,
         sets: [
           { weightKg: 50, reps: 8, done: false },
           { weightKg: 50, reps: 6, done: false },
@@ -235,6 +249,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '7-9',
         lastWeightKg: 55,
+        restSeconds: 120,
         sets: [
           { weightKg: 55, reps: 9, done: false },
           { weightKg: 59, reps: 8, done: false },
@@ -246,6 +261,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 2,
         targetReps: '6-8',
         lastWeightKg: 43,
+        restSeconds: 120,
         sets: [
           { weightKg: 43, reps: 8, done: false },
           { weightKg: 43, reps: 6, done: false },
@@ -256,6 +272,7 @@ export const routineDays: DemoRoutineDay[] = [
         targetSets: 3,
         targetReps: '8-15',
         lastWeightKg: 59,
+        restSeconds: 105,
         sets: [
           { weightKg: 59, reps: 8, done: false },
           { weightKg: 59, reps: 10, done: false },

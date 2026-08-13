@@ -37,6 +37,7 @@ src/
   lib/
     supabase.ts                 Supabase-Client
     demoData.ts                  Trainingsplan (echt, aus Hevy) + Ernährungs-/Phasen-Platzhalter
+    progression.ts                Regelbasierter Gewicht-/Wdh.-Vorschlag pro Übung
     notifications.ts             Sonntags-Benachrichtigung mit Wochenrückblick
   theme/                        Farb-/Spacing-Tokens (dunkles Theme, kräftiger Akzent)
   types/database.ts            TypeScript-Typen passend zum SQL-Schema
@@ -88,6 +89,9 @@ npm run web       # Browser
 ## Features im aktuellen Stand
 
 - **Workout-Logging:** Push (7 Übungen) und Pull (9 Übungen) — echter Trainingsplan aus Hevy, je 2x/Woche trainiert, umschaltbar; aktive Session mit editierbarem Gewicht/Wdh. pro Satz, Sätze abhaken oder hinzufügen
+- **Pausentimer & Session-Stoppuhr:** startet automatisch beim Abhaken eines Satzes (Dauer pro Übung aus Hevy übernommen), mit +15s/-15s/Skip; Gesamt-Session-Zeit läuft im Header mit
+- **PR-Erkennung:** kleine Animation (💪) direkt am Satz, wenn Gewicht oder Wdh. die letzte Session übertreffen
+- **Progressions-Vorschlag:** `src/lib/progression.ts` — regelbasierte (keine ML-Blackbox) Logik, die aus der letzten Session pro Übung ein Gewicht/Wdh.-Ziel für heute vorschlägt; auf dem Workouts-Screen und in der aktiven Session sichtbar
 - **Ernährung:** Tagesprotokoll nach Mahlzeit, Lebensmittelsuche mit Mengen-/Makro-Vorschau, Foto-Scan-Flow (echter Kamera-/Galerie-Zugriff über `expo-image-picker`; die Erkennung selbst ist aktuell eine Mock-Antwort — für echte Ergebnisse braucht es eine Supabase Edge Function, die das Foto an ein Vision-Modell schickt)
 - **Phasen:** Cutting/Bulking/Maintenance mit automatisch angepassten Kalorien-/Makrozielen (DB-Trigger)
 - **Motivation:** Trainings- & Log-Streak, PR-Badges, Achievement-Chips, wöchentliche Sonntags-Benachrichtigung (`expo-notifications`, lokal geplant — für zuverlässige Zustellung in Produktion empfiehlt sich ein Dev-Build statt Expo Go)

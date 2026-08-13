@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
 import { routineName, routineDays, todaysRoutineDayId } from '../../src/lib/demoData';
+import { suggestNextSession } from '../../src/lib/progression';
 
 export default function WorkoutsScreen() {
   const [selectedDayId, setSelectedDayId] = useState(todaysRoutineDayId);
@@ -53,6 +54,7 @@ export default function WorkoutsScreen() {
                   {exercise.targetSets} Sätze × {exercise.targetReps} Wdh. · zuletzt {exercise.lastWeightKg} kg
                   {doneSets > 0 ? ` · ${doneSets}/${exercise.sets.length} Sätze erledigt` : ''}
                 </Text>
+                <Text style={styles.exerciseSuggestion}>💡 {suggestNextSession(exercise).reason}</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.tertiaryLabel} />
             </Pressable>
@@ -112,6 +114,7 @@ const styles = StyleSheet.create({
   exerciseInfo: { flex: 1 },
   exerciseName: { fontSize: 16, fontWeight: '600', color: colors.label },
   exerciseMeta: { fontSize: 13, color: colors.secondaryLabel, marginTop: 2 },
+  exerciseSuggestion: { fontSize: 11.5, color: colors.tint, fontWeight: '600', marginTop: 3 },
   startButton: {
     position: 'absolute',
     left: spacing.md,
