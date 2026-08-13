@@ -1,28 +1,41 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, radius, spacing } from '../theme/colors';
 
 interface StreakBarProps {
   trainingWeeks: number;
   loggingDays: number;
+  onPressTraining?: () => void;
+  onPressLogging?: () => void;
 }
 
-export function StreakBar({ trainingWeeks, loggingDays }: StreakBarProps) {
+export function StreakBar({
+  trainingWeeks,
+  loggingDays,
+  onPressTraining,
+  onPressLogging,
+}: StreakBarProps) {
   return (
     <View style={styles.row}>
-      <View style={[styles.pill, { backgroundColor: 'rgba(255,90,54,0.14)', borderColor: 'rgba(255,90,54,0.35)' }]}>
+      <Pressable
+        onPress={onPressTraining}
+        style={[styles.pill, { backgroundColor: 'rgba(255,90,54,0.14)', borderColor: 'rgba(255,90,54,0.35)' }]}
+      >
         <Text style={styles.emoji}>🔥</Text>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.value}>{trainingWeeks} Wochen</Text>
           <Text style={styles.label}>Trainings-Streak</Text>
         </View>
-      </View>
-      <View style={[styles.pill, { backgroundColor: 'rgba(180,255,57,0.10)', borderColor: 'rgba(180,255,57,0.30)' }]}>
+      </Pressable>
+      <Pressable
+        onPress={onPressLogging}
+        style={[styles.pill, { backgroundColor: 'rgba(180,255,57,0.10)', borderColor: 'rgba(180,255,57,0.30)' }]}
+      >
         <Text style={styles.emoji}>📝</Text>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.value}>{loggingDays} Tage</Text>
           <Text style={styles.label}>Log-Streak</Text>
         </View>
-      </View>
+      </Pressable>
     </View>
   );
 }

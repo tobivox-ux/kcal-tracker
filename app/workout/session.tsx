@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Animated, Vibration } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Animated, Vibration, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { type DemoSet } from '../../src/lib/demoData';
 import { suggestNextSession } from '../../src/lib/progression';
 import { scheduleRestTimerNotification, cancelRestTimerNotification } from '../../src/lib/notifications';
 import { useRoutineStore } from '../../src/store/routineStore';
+import { useWorkoutHistoryStore, MIN_TRACKED_SESSION_SECONDS } from '../../src/store/workoutHistoryStore';
 import { GradientButton } from '../../src/components/GradientButton';
 
 interface ExerciseState {
@@ -27,6 +28,7 @@ function formatClock(totalSeconds: number): string {
 export default function WorkoutSessionScreen() {
   const { day: dayId } = useLocalSearchParams<{ day: string }>();
   const routineDays = useRoutineStore((s) => s.routines);
+  const addSession = useWorkoutHistoryStore((s) => s.addSession);
   const day = routineDays.find((d) => d.id === dayId) ?? routineDays[0];
 
   // Unveränderte Momentaufnahme der letzten Session — Basis für
@@ -119,6 +121,39 @@ export default function WorkoutSessionScreen() {
     );
   }
 
+  function finishWorkout() {
+    cancelRestTimerNotification().catch(() => {});
+    const volumeKg = exercises.reduce(
+      (sum, ex) => sum + ex.sets.filter((s) => s.done).reduce((v, s) => v + s.weightKg * s.reps, 0),
+      0
+    );
+    const saved = addSession(
+      {
+        dayId: day.id,
+        dayLabel: day.label,
+        durationMin: Math.round(elapsed / 60),
+        volumeKg: Math.round(volumeKg),
+        setsCompleted: doneSets,
+        setsPlanned: totalSets,
+      },
+      elapsed
+    );
+    if (!saved) {
+      Alert.alert(
+        'Zu kurz zum Speichern',
+        `Sessions unter ${Math.ceil(
+          MIN_TRACKED_SESSION_SECONDS / 60
+        )} Minuten landen nicht im Verlauf, damit die Statistik sauber bleibt.`,
+        [
+          { text: 'Weiter trainieren', style: 'cancel' },
+          { text: 'Trotzdem beenden', style: 'destructive', onPress: () => router.back() },
+        ]
+      );
+      return;
+    }
+    router.back();
+  }
+
   const restProgress = restRemaining !== null && restTotal > 0 ? 1 - restRemaining / restTotal : 0;
 
   return (
@@ -139,7 +174,11 @@ export default function WorkoutSessionScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scroll, restRemaining !== null && { paddingBottom: 110 }]}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, restRemaining !== null && { paddingBottom: 110 }]}
+        keyboardShouldPersistTaps="handled"
+      >
         {exercises.map((exercise, exIndex) => (
           <View key={exercise.name} style={styles.exerciseCard}>
             <Text style={styles.exerciseName}>{exercise.name}</Text>
@@ -216,8 +255,16 @@ export default function WorkoutSessionScreen() {
           </View>
         ))}
 
-        <GradientButton label="Workout beenden" style={styles.finishButton} onPress={() => router.back()} />
+        <Text style={styles.finishHint}>
+          {elapsed < MIN_TRACKED_SESSION_SECONDS
+            ? `Wird ab ${Math.ceil(MIN_TRACKED_SESSION_SECONDS / 60)} min Trainingszeit im Verlauf gespeichert (noch ${formatClock(
+                MIN_TRACKED_SESSION_SECONDS - elapsed
+              )})`
+            : 'Wird beim Beenden im Verlauf gespeichert ✓'}
+        </Text>
+        <GradientButton label="Workout beenden" style={styles.finishButton} onPress={finishWorkout} />
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {restRemaining !== null && (
         <View style={styles.restBar}>
@@ -349,6 +396,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   addSetText: { fontSize: 13, fontWeight: '700', color: colors.tint },
+  finishHint: { fontSize: 11.5, color: colors.secondaryLabel, textAlign: 'center', marginTop: spacing.xs },
   finishButton: { marginTop: spacing.sm },
   restBar: {
     position: 'absolute',

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Image, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Image, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -101,7 +101,8 @@ export default function ScanFoodScreen() {
       )}
 
       {step === 'result' && (
-        <View style={styles.resultWrap}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.resultWrap} keyboardShouldPersistTaps="handled">
           {imageUri && <Image source={{ uri: imageUri }} style={styles.preview} />}
 
           <View style={styles.resultCard}>
@@ -149,7 +150,8 @@ export default function ScanFoodScreen() {
               router.back();
             }}
           />
-        </View>
+        </ScrollView>
+        </KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );
@@ -224,7 +226,7 @@ const styles = StyleSheet.create({
   secondaryBtnText: { color: colors.label, fontSize: 15.5, fontWeight: '700' },
   preview: { width: '100%', height: 220, borderRadius: radius.lg, marginBottom: spacing.sm },
   analyzingText: { fontSize: 14, color: colors.secondaryLabel, marginTop: spacing.sm, fontWeight: '600' },
-  resultWrap: { flex: 1, padding: spacing.md },
+  resultWrap: { padding: spacing.md, paddingBottom: spacing.xl },
   resultCard: {
     backgroundColor: colors.card,
     borderWidth: 1,

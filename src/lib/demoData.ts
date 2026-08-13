@@ -438,17 +438,163 @@ export interface DemoFood {
   fatPer100g: number;
 }
 
+// Offline-Grundstock an Lebensmitteln (Werte pro 100 g bzw. 100 ml, gerundete
+// Durchschnittswerte). Deckt die üblichen Verdächtigen ab; für "wirklich jedes
+// Produkt inkl. Barcode" braucht es später eine echte Datenbank-Anbindung
+// (z. B. Open Food Facts) über das Supabase-Backend.
 export const foodDatabase: DemoFood[] = [
+  // Fleisch & Fisch
   { name: 'Hähnchenbrust', caloriesPer100g: 165, proteinPer100g: 31, carbsPer100g: 0, fatPer100g: 3.6 },
-  { name: 'Magerquark', caloriesPer100g: 78, proteinPer100g: 12, carbsPer100g: 3.6, fatPer100g: 0.2 },
-  { name: 'Reis (gekocht)', caloriesPer100g: 130, proteinPer100g: 2.7, carbsPer100g: 28, fatPer100g: 0.3 },
-  { name: 'Haferflocken', caloriesPer100g: 375, proteinPer100g: 13, carbsPer100g: 60, fatPer100g: 7 },
-  { name: 'Whey Protein', brand: 'ESN Designer Whey', caloriesPer100g: 390, proteinPer100g: 80, carbsPer100g: 6, fatPer100g: 6 },
-  { name: 'Eier', caloriesPer100g: 155, proteinPer100g: 13, carbsPer100g: 1.1, fatPer100g: 11 },
-  { name: 'Banane', caloriesPer100g: 89, proteinPer100g: 1.1, carbsPer100g: 23, fatPer100g: 0.3 },
-  { name: 'Vollkornbrot', caloriesPer100g: 247, proteinPer100g: 9, carbsPer100g: 41, fatPer100g: 3.4 },
-  { name: 'Erdnussbutter', caloriesPer100g: 588, proteinPer100g: 25, carbsPer100g: 20, fatPer100g: 50 },
+  { name: 'Hähnchenschenkel', caloriesPer100g: 209, proteinPer100g: 26, carbsPer100g: 0, fatPer100g: 11 },
+  { name: 'Putenbrust', caloriesPer100g: 135, proteinPer100g: 30, carbsPer100g: 0, fatPer100g: 1 },
+  { name: 'Rinderhack (5% Fett)', caloriesPer100g: 137, proteinPer100g: 21, carbsPer100g: 0, fatPer100g: 5 },
+  { name: 'Rinderhack (20% Fett)', caloriesPer100g: 254, proteinPer100g: 17, carbsPer100g: 0, fatPer100g: 20 },
+  { name: 'Rindersteak', caloriesPer100g: 250, proteinPer100g: 26, carbsPer100g: 0, fatPer100g: 16 },
+  { name: 'Schweineschnitzel', caloriesPer100g: 143, proteinPer100g: 22, carbsPer100g: 0, fatPer100g: 6 },
+  { name: 'Hackfleisch gemischt', caloriesPer100g: 227, proteinPer100g: 18, carbsPer100g: 0, fatPer100g: 17 },
+  { name: 'Salami', caloriesPer100g: 380, proteinPer100g: 21, carbsPer100g: 1.5, fatPer100g: 32 },
+  { name: 'Kochschinken', caloriesPer100g: 107, proteinPer100g: 18, carbsPer100g: 1, fatPer100g: 3.5 },
+  { name: 'Bacon', caloriesPer100g: 541, proteinPer100g: 37, carbsPer100g: 1.4, fatPer100g: 42 },
+  { name: 'Bratwurst', caloriesPer100g: 297, proteinPer100g: 13, carbsPer100g: 2, fatPer100g: 26 },
   { name: 'Lachs', caloriesPer100g: 208, proteinPer100g: 20, carbsPer100g: 0, fatPer100g: 13 },
+  { name: 'Thunfisch (Wasser)', caloriesPer100g: 116, proteinPer100g: 26, carbsPer100g: 0, fatPer100g: 1 },
+  { name: 'Thunfisch (Öl)', caloriesPer100g: 198, proteinPer100g: 29, carbsPer100g: 0, fatPer100g: 8 },
+  { name: 'Kabeljau', caloriesPer100g: 82, proteinPer100g: 18, carbsPer100g: 0, fatPer100g: 0.7 },
+  { name: 'Garnelen', caloriesPer100g: 99, proteinPer100g: 24, carbsPer100g: 0.2, fatPer100g: 0.3 },
+  { name: 'Fischstäbchen', caloriesPer100g: 200, proteinPer100g: 12, carbsPer100g: 18, fatPer100g: 9 },
+
+  // Milchprodukte & Eier
+  { name: 'Magerquark', caloriesPer100g: 78, proteinPer100g: 12, carbsPer100g: 3.6, fatPer100g: 0.2 },
+  { name: 'Speisequark 20%', caloriesPer100g: 109, proteinPer100g: 12, carbsPer100g: 3, fatPer100g: 5 },
+  { name: 'Skyr', caloriesPer100g: 63, proteinPer100g: 11, carbsPer100g: 4, fatPer100g: 0.2 },
+  { name: 'Griechischer Joghurt 10%', caloriesPer100g: 133, proteinPer100g: 6, carbsPer100g: 4, fatPer100g: 10 },
+  { name: 'Naturjoghurt 3,5%', caloriesPer100g: 61, proteinPer100g: 3.5, carbsPer100g: 4.7, fatPer100g: 3.3 },
+  { name: 'Hüttenkäse', caloriesPer100g: 98, proteinPer100g: 11, carbsPer100g: 3.4, fatPer100g: 4.3 },
+  { name: 'Milch 3,5%', caloriesPer100g: 64, proteinPer100g: 3.3, carbsPer100g: 4.8, fatPer100g: 3.5 },
+  { name: 'Milch 1,5%', caloriesPer100g: 47, proteinPer100g: 3.4, carbsPer100g: 4.9, fatPer100g: 1.5 },
+  { name: 'Hafermilch', caloriesPer100g: 45, proteinPer100g: 0.8, carbsPer100g: 7, fatPer100g: 1.5 },
+  { name: 'Mandelmilch (ungesüßt)', caloriesPer100g: 15, proteinPer100g: 0.5, carbsPer100g: 0.3, fatPer100g: 1.2 },
+  { name: 'Gouda', caloriesPer100g: 356, proteinPer100g: 25, carbsPer100g: 2.2, fatPer100g: 27 },
+  { name: 'Mozzarella', caloriesPer100g: 280, proteinPer100g: 22, carbsPer100g: 2.2, fatPer100g: 20 },
+  { name: 'Harzer Käse', caloriesPer100g: 125, proteinPer100g: 30, carbsPer100g: 0, fatPer100g: 0.5 },
+  { name: 'Frischkäse', caloriesPer100g: 253, proteinPer100g: 6, carbsPer100g: 3.5, fatPer100g: 24 },
+  { name: 'Parmesan', caloriesPer100g: 402, proteinPer100g: 36, carbsPer100g: 3.2, fatPer100g: 27 },
+  { name: 'Butter', caloriesPer100g: 741, proteinPer100g: 0.7, carbsPer100g: 0.6, fatPer100g: 82 },
+  { name: 'Eier', caloriesPer100g: 155, proteinPer100g: 13, carbsPer100g: 1.1, fatPer100g: 11 },
+  { name: 'Eiweiß (Ei)', caloriesPer100g: 52, proteinPer100g: 11, carbsPer100g: 0.7, fatPer100g: 0.2 },
+
+  // Kohlenhydrate & Beilagen
+  { name: 'Reis (gekocht)', caloriesPer100g: 130, proteinPer100g: 2.7, carbsPer100g: 28, fatPer100g: 0.3 },
+  { name: 'Reis (roh)', caloriesPer100g: 360, proteinPer100g: 7, carbsPer100g: 78, fatPer100g: 0.9 },
+  { name: 'Basmatireis (gekocht)', caloriesPer100g: 121, proteinPer100g: 3, carbsPer100g: 25, fatPer100g: 0.4 },
+  { name: 'Nudeln (gekocht)', caloriesPer100g: 158, proteinPer100g: 6, carbsPer100g: 31, fatPer100g: 0.9 },
+  { name: 'Vollkornnudeln (gekocht)', caloriesPer100g: 124, proteinPer100g: 5, carbsPer100g: 25, fatPer100g: 1 },
+  { name: 'Kartoffeln (gekocht)', caloriesPer100g: 87, proteinPer100g: 2, carbsPer100g: 20, fatPer100g: 0.1 },
+  { name: 'Süßkartoffel', caloriesPer100g: 86, proteinPer100g: 1.6, carbsPer100g: 20, fatPer100g: 0.1 },
+  { name: 'Pommes frites', caloriesPer100g: 312, proteinPer100g: 3.4, carbsPer100g: 41, fatPer100g: 15 },
+  { name: 'Haferflocken', caloriesPer100g: 375, proteinPer100g: 13, carbsPer100g: 60, fatPer100g: 7 },
+  { name: 'Couscous (gekocht)', caloriesPer100g: 112, proteinPer100g: 3.8, carbsPer100g: 23, fatPer100g: 0.2 },
+  { name: 'Quinoa (gekocht)', caloriesPer100g: 120, proteinPer100g: 4.4, carbsPer100g: 21, fatPer100g: 1.9 },
+  { name: 'Vollkornbrot', caloriesPer100g: 247, proteinPer100g: 9, carbsPer100g: 41, fatPer100g: 3.4 },
+  { name: 'Toastbrot', caloriesPer100g: 273, proteinPer100g: 9, carbsPer100g: 49, fatPer100g: 4 },
+  { name: 'Brötchen', caloriesPer100g: 265, proteinPer100g: 9, carbsPer100g: 52, fatPer100g: 1.5 },
+  { name: 'Knäckebrot', caloriesPer100g: 350, proteinPer100g: 10, carbsPer100g: 66, fatPer100g: 2 },
+  { name: 'Cornflakes', caloriesPer100g: 378, proteinPer100g: 7, carbsPer100g: 84, fatPer100g: 0.9 },
+  { name: 'Müsli', caloriesPer100g: 367, proteinPer100g: 10, carbsPer100g: 60, fatPer100g: 9 },
+
+  // Hülsenfrüchte & vegetarische Proteine
+  { name: 'Linsen (gekocht)', caloriesPer100g: 116, proteinPer100g: 9, carbsPer100g: 20, fatPer100g: 0.4 },
+  { name: 'Kichererbsen (gekocht)', caloriesPer100g: 164, proteinPer100g: 9, carbsPer100g: 27, fatPer100g: 2.6 },
+  { name: 'Bohnen (Dose)', caloriesPer100g: 91, proteinPer100g: 6, carbsPer100g: 13, fatPer100g: 0.5 },
+  { name: 'Tofu', caloriesPer100g: 144, proteinPer100g: 15, carbsPer100g: 2.8, fatPer100g: 9 },
+  { name: 'Tempeh', caloriesPer100g: 193, proteinPer100g: 19, carbsPer100g: 9, fatPer100g: 11 },
+  { name: 'Sojaschnetzel (trocken)', caloriesPer100g: 345, proteinPer100g: 50, carbsPer100g: 20, fatPer100g: 1.5 },
+  { name: 'Erbsen', caloriesPer100g: 81, proteinPer100g: 5, carbsPer100g: 14, fatPer100g: 0.4 },
+
+  // Gemüse
+  { name: 'Brokkoli', caloriesPer100g: 34, proteinPer100g: 2.8, carbsPer100g: 7, fatPer100g: 0.4 },
+  { name: 'Karotten', caloriesPer100g: 41, proteinPer100g: 0.9, carbsPer100g: 10, fatPer100g: 0.2 },
+  { name: 'Tomaten', caloriesPer100g: 18, proteinPer100g: 0.9, carbsPer100g: 3.9, fatPer100g: 0.2 },
+  { name: 'Gurke', caloriesPer100g: 15, proteinPer100g: 0.7, carbsPer100g: 3.6, fatPer100g: 0.1 },
+  { name: 'Paprika', caloriesPer100g: 31, proteinPer100g: 1, carbsPer100g: 6, fatPer100g: 0.3 },
+  { name: 'Zwiebel', caloriesPer100g: 40, proteinPer100g: 1.1, carbsPer100g: 9, fatPer100g: 0.1 },
+  { name: 'Spinat', caloriesPer100g: 23, proteinPer100g: 2.9, carbsPer100g: 3.6, fatPer100g: 0.4 },
+  { name: 'Zucchini', caloriesPer100g: 17, proteinPer100g: 1.2, carbsPer100g: 3.1, fatPer100g: 0.3 },
+  { name: 'Champignons', caloriesPer100g: 22, proteinPer100g: 3.1, carbsPer100g: 3.3, fatPer100g: 0.3 },
+  { name: 'Salat (Eisberg)', caloriesPer100g: 14, proteinPer100g: 0.9, carbsPer100g: 3, fatPer100g: 0.1 },
+  { name: 'Mais (Dose)', caloriesPer100g: 86, proteinPer100g: 3.2, carbsPer100g: 19, fatPer100g: 1.2 },
+  { name: 'Blumenkohl', caloriesPer100g: 25, proteinPer100g: 1.9, carbsPer100g: 5, fatPer100g: 0.3 },
+  { name: 'Avocado', caloriesPer100g: 160, proteinPer100g: 2, carbsPer100g: 9, fatPer100g: 15 },
+
+  // Obst
+  { name: 'Banane', caloriesPer100g: 89, proteinPer100g: 1.1, carbsPer100g: 23, fatPer100g: 0.3 },
+  { name: 'Apfel', caloriesPer100g: 52, proteinPer100g: 0.3, carbsPer100g: 14, fatPer100g: 0.2 },
+  { name: 'Orange', caloriesPer100g: 47, proteinPer100g: 0.9, carbsPer100g: 12, fatPer100g: 0.1 },
+  { name: 'Erdbeeren', caloriesPer100g: 32, proteinPer100g: 0.7, carbsPer100g: 8, fatPer100g: 0.3 },
+  { name: 'Blaubeeren', caloriesPer100g: 57, proteinPer100g: 0.7, carbsPer100g: 14, fatPer100g: 0.3 },
+  { name: 'Weintrauben', caloriesPer100g: 69, proteinPer100g: 0.7, carbsPer100g: 18, fatPer100g: 0.2 },
+  { name: 'Ananas', caloriesPer100g: 50, proteinPer100g: 0.5, carbsPer100g: 13, fatPer100g: 0.1 },
+  { name: 'Mango', caloriesPer100g: 60, proteinPer100g: 0.8, carbsPer100g: 15, fatPer100g: 0.4 },
+  { name: 'Wassermelone', caloriesPer100g: 30, proteinPer100g: 0.6, carbsPer100g: 8, fatPer100g: 0.2 },
+  { name: 'Kiwi', caloriesPer100g: 61, proteinPer100g: 1.1, carbsPer100g: 15, fatPer100g: 0.5 },
+  { name: 'Datteln', caloriesPer100g: 282, proteinPer100g: 2.5, carbsPer100g: 75, fatPer100g: 0.4 },
+
+  // Nüsse, Fette & Öle
+  { name: 'Erdnussbutter', caloriesPer100g: 588, proteinPer100g: 25, carbsPer100g: 20, fatPer100g: 50 },
+  { name: 'Mandeln', caloriesPer100g: 579, proteinPer100g: 21, carbsPer100g: 22, fatPer100g: 50 },
+  { name: 'Walnüsse', caloriesPer100g: 654, proteinPer100g: 15, carbsPer100g: 14, fatPer100g: 65 },
+  { name: 'Cashewkerne', caloriesPer100g: 553, proteinPer100g: 18, carbsPer100g: 30, fatPer100g: 44 },
+  { name: 'Haselnüsse', caloriesPer100g: 628, proteinPer100g: 15, carbsPer100g: 17, fatPer100g: 61 },
+  { name: 'Olivenöl', caloriesPer100g: 884, proteinPer100g: 0, carbsPer100g: 0, fatPer100g: 100 },
+  { name: 'Rapsöl', caloriesPer100g: 884, proteinPer100g: 0, carbsPer100g: 0, fatPer100g: 100 },
+  { name: 'Leinsamen', caloriesPer100g: 534, proteinPer100g: 18, carbsPer100g: 29, fatPer100g: 42 },
+  { name: 'Chiasamen', caloriesPer100g: 486, proteinPer100g: 17, carbsPer100g: 42, fatPer100g: 31 },
+
+  // Supplements & Fitness
+  { name: 'Whey Protein', brand: 'ESN Designer Whey', caloriesPer100g: 390, proteinPer100g: 80, carbsPer100g: 6, fatPer100g: 6 },
+  { name: 'Casein Protein', caloriesPer100g: 366, proteinPer100g: 78, carbsPer100g: 6, fatPer100g: 2 },
+  { name: 'Proteinriegel', caloriesPer100g: 350, proteinPer100g: 33, carbsPer100g: 30, fatPer100g: 10 },
+  { name: 'Proteinpudding', caloriesPer100g: 73, proteinPer100g: 10, carbsPer100g: 4.5, fatPer100g: 1.5 },
+  { name: 'Kreatin Monohydrat', caloriesPer100g: 0, proteinPer100g: 0, carbsPer100g: 0, fatPer100g: 0 },
+
+  // Fertiggerichte & Fast Food
+  { name: 'Pizza Margherita', caloriesPer100g: 266, proteinPer100g: 11, carbsPer100g: 33, fatPer100g: 10 },
+  { name: 'Pizza Salami', caloriesPer100g: 298, proteinPer100g: 12, carbsPer100g: 31, fatPer100g: 14 },
+  { name: 'Döner Kebab', caloriesPer100g: 215, proteinPer100g: 15, carbsPer100g: 17, fatPer100g: 10 },
+  { name: 'Burger (Fastfood)', caloriesPer100g: 250, proteinPer100g: 13, carbsPer100g: 23, fatPer100g: 12 },
+  { name: 'Chicken Nuggets', caloriesPer100g: 296, proteinPer100g: 15, carbsPer100g: 18, fatPer100g: 19 },
+  { name: 'Lasagne', caloriesPer100g: 132, proteinPer100g: 8, carbsPer100g: 11, fatPer100g: 6 },
+  { name: 'Sushi (Maki)', caloriesPer100g: 143, proteinPer100g: 5, carbsPer100g: 27, fatPer100g: 1.5 },
+
+  // Süßes & Snacks
+  { name: 'Schokolade (Vollmilch)', caloriesPer100g: 535, proteinPer100g: 7.7, carbsPer100g: 59, fatPer100g: 30 },
+  { name: 'Zartbitterschokolade', caloriesPer100g: 546, proteinPer100g: 7.8, carbsPer100g: 46, fatPer100g: 31 },
+  { name: 'Gummibärchen', caloriesPer100g: 343, proteinPer100g: 6.9, carbsPer100g: 77, fatPer100g: 0.2 },
+  { name: 'Chips', caloriesPer100g: 536, proteinPer100g: 7, carbsPer100g: 53, fatPer100g: 34 },
+  { name: 'Kekse', caloriesPer100g: 480, proteinPer100g: 6, carbsPer100g: 65, fatPer100g: 21 },
+  { name: 'Eiscreme', caloriesPer100g: 207, proteinPer100g: 3.5, carbsPer100g: 24, fatPer100g: 11 },
+  { name: 'Nutella', caloriesPer100g: 539, proteinPer100g: 6, carbsPer100g: 57, fatPer100g: 31 },
+  { name: 'Honig', caloriesPer100g: 304, proteinPer100g: 0.3, carbsPer100g: 82, fatPer100g: 0 },
+  { name: 'Marmelade', caloriesPer100g: 278, proteinPer100g: 0.4, carbsPer100g: 69, fatPer100g: 0.1 },
+
+  // Getränke (pro 100 ml)
+  { name: 'Cola', caloriesPer100g: 42, proteinPer100g: 0, carbsPer100g: 10.6, fatPer100g: 0 },
+  { name: 'Cola Zero', caloriesPer100g: 0.3, proteinPer100g: 0, carbsPer100g: 0, fatPer100g: 0 },
+  { name: 'Monster Energy', caloriesPer100g: 47, proteinPer100g: 0, carbsPer100g: 11, fatPer100g: 0 },
+  { name: 'Monster Ultra (Zero)', caloriesPer100g: 3, proteinPer100g: 0, carbsPer100g: 0.6, fatPer100g: 0 },
+  { name: 'Red Bull', caloriesPer100g: 45, proteinPer100g: 0, carbsPer100g: 11, fatPer100g: 0 },
+  { name: 'Apfelsaft', caloriesPer100g: 46, proteinPer100g: 0.1, carbsPer100g: 11, fatPer100g: 0.1 },
+  { name: 'Orangensaft', caloriesPer100g: 45, proteinPer100g: 0.7, carbsPer100g: 10, fatPer100g: 0.2 },
+  { name: 'Bier', caloriesPer100g: 43, proteinPer100g: 0.5, carbsPer100g: 3.6, fatPer100g: 0 },
+  { name: 'Kaffee (schwarz)', caloriesPer100g: 2, proteinPer100g: 0.1, carbsPer100g: 0, fatPer100g: 0 },
+  { name: 'Wasser', caloriesPer100g: 0, proteinPer100g: 0, carbsPer100g: 0, fatPer100g: 0 },
+
+  // Saucen & Sonstiges
+  { name: 'Ketchup', caloriesPer100g: 112, proteinPer100g: 1.3, carbsPer100g: 26, fatPer100g: 0.2 },
+  { name: 'Mayonnaise', caloriesPer100g: 680, proteinPer100g: 1, carbsPer100g: 1.5, fatPer100g: 75 },
+  { name: 'Senf', caloriesPer100g: 66, proteinPer100g: 4, carbsPer100g: 5, fatPer100g: 3.5 },
+  { name: 'Tomatensauce', caloriesPer100g: 35, proteinPer100g: 1.6, carbsPer100g: 6, fatPer100g: 0.5 },
+  { name: 'Sojasauce', caloriesPer100g: 53, proteinPer100g: 8, carbsPer100g: 4.9, fatPer100g: 0.1 },
 ];
 
 // Körpergewichts-Verlauf (kg) für die Gewichtskurve auf dem Fortschritts-Screen.

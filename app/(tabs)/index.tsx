@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { colors, radius, spacing } from '../../src/theme/colors';
@@ -8,14 +8,17 @@ import { MacroBar } from '../../src/components/MacroBar';
 import { PhaseBadge } from '../../src/components/PhaseBadge';
 import { StreakBar } from '../../src/components/StreakBar';
 import { AchievementChips } from '../../src/components/AchievementChips';
+import { FadeInView } from '../../src/components/FadeInView';
 import { todaysRoutineDayId, streaks, recentAchievements, getQuoteOfTheDay } from '../../src/lib/demoData';
 import { useNutritionStore, dailyTotalsFromEntries } from '../../src/store/nutritionStore';
+import { useWorkoutHistoryStore } from '../../src/store/workoutHistoryStore';
 import { useActivePhase } from '../../src/store/phaseStore';
 import { useRoutineStore } from '../../src/store/routineStore';
 
 export default function DashboardScreen() {
   const activePhase = useActivePhase();
   const routineDays = useRoutineStore((s) => s.routines);
+  const sessions = useWorkoutHistoryStore((s) => s.sessions);
   const entries = useNutritionStore((s) => s.entries);
   const checkMidnightReset = useNutritionStore((s) => s.checkMidnightReset);
   useEffect(() => {
@@ -23,12 +26,16 @@ export default function DashboardScreen() {
   }, [checkMidnightReset]);
   const today = dailyTotalsFromEntries(entries);
   const quote = getQuoteOfTheDay();
+  const [streakDetail, setStreakDetail] = useState<'training' | 'logging' | null>(null);
   const caloriesRemaining = activePhase.calorieTarget - today.caloriesConsumed;
-  const todaysRoutineDay = routineDays.find((d) => d.id === todaysRoutineDayId) ?? routineDays[0];
-  const isExerciseDone = (ex: (typeof todaysRoutineDay.exercises)[number]) =>
-    ex.sets.every((s) => s.done);
-  const doneCount = todaysRoutineDay.exercises.filter(isExerciseDone).length;
-  const nextExercise = todaysRoutineDay.exercises.find((e) => !isExerciseDone(e));
+  // Es wird nicht täglich trainiert — deshalb zeigt die Karte die nächste
+  // fällige Routine (die andere als zuletzt) statt "heutiges Workout".
+  const lastSession = sessions[0];
+  const nextRoutine =
+    routineDays.find((d) => d.id !== lastSession?.dayId) ??
+    routineDays.find((d) => d.id === todaysRoutineDayId) ??
+    routineDays[0];
+  const lastTrainedLabel = lastSession ? `zuletzt: ${lastSession.dayLabel}, ${lastSession.date}` : 'noch kein Training geloggt';
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -43,14 +50,21 @@ export default function DashboardScreen() {
           </Pressable>
         </View>
 
-        <StreakBar trainingWeeks={streaks.trainingWeeks} loggingDays={streaks.loggingDays} />
+        <StreakBar
+          trainingWeeks={streaks.trainingWeeks}
+          loggingDays={streaks.loggingDays}
+          onPressTraining={() => setStreakDetail('training')}
+          onPressLogging={() => setStreakDetail('logging')}
+        />
 
+        <FadeInView delay={60}>
         <View style={styles.card}>
           <View style={styles.ringRow}>
             <ProgressRing
               progress={today.caloriesConsumed / activePhase.calorieTarget}
               gradientColors={[colors.tint, colors.celebrate]}
               value={`${caloriesRemaining}`}
+              countTo={caloriesRemaining}
               label="kcal übrig"
             />
             <View style={styles.ringSideStats}>
@@ -64,7 +78,9 @@ export default function DashboardScreen() {
             </View>
           </View>
         </View>
+        </FadeInView>
 
+        <FadeInView delay={140}>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Makros heute</Text>
           <MacroBar
@@ -82,22 +98,33 @@ export default function DashboardScreen() {
           />
           <MacroBar label="Fett" currentG={today.fatG} targetG={activePhase.fatTargetG} color={colors.fat} />
         </View>
+        </FadeInView>
 
-        <AchievementChips items={recentAchievements} />
+        <FadeInView delay={220}>
+          <AchievementChips items={recentAchievements} />
+        </FadeInView>
 
+        <FadeInView delay={300}>
         <Link href="/workouts" asChild>
-          <View style={styles.card}>
+          <Pressable style={styles.card}>
             <View style={styles.workoutHeaderRow}>
-              <Text style={styles.cardTitle}>Heutiges Workout</Text>
+              <Text style={styles.cardTitle}>Nächstes Workout</Text>
               <Text style={styles.chevron}>›</Text>
             </View>
-            <Text style={styles.workoutDayLabel}>{todaysRoutineDay.label}</Text>
+            <Text style={styles.workoutDayLabel}>{nextRoutine.label}</Text>
             <Text style={styles.workoutSubtext}>
-              {doneCount} / {todaysRoutineDay.exercises.length} Übungen erledigt
-              {nextExercise ? ` · als nächstes: ${nextExercise.name}` : ''}
+              {nextRoutine.exercises.length} Übungen · {lastTrainedLabel}
             </Text>
-          </View>
+          </Pressable>
         </Link>
+        </FadeInView>
+
+        <StreakDetailModal
+          type={streakDetail}
+          onClose={() => setStreakDetail(null)}
+          trainingWeeks={streaks.trainingWeeks}
+          loggingDays={streaks.loggingDays}
+        />
 
         <View style={styles.quoteCard}>
           <Text style={styles.quoteText}>„{quote.text}"</Text>
@@ -105,6 +132,53 @@ export default function DashboardScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function StreakDetailModal({
+  type,
+  onClose,
+  trainingWeeks,
+  loggingDays,
+}: {
+  type: 'training' | 'logging' | null;
+  onClose: () => void;
+  trainingWeeks: number;
+  loggingDays: number;
+}) {
+  const isTraining = type === 'training';
+  const detail = isTraining
+    ? {
+        emoji: '🔥',
+        title: `${trainingWeeks} Wochen Trainings-Streak`,
+        body: 'Läuft weiter, solange du pro Woche alle geplanten Workouts schaffst. Eine verpasste Woche setzt ihn zurück.',
+        stat: `${trainingWeeks * 4} Workouts in dieser Serie`,
+        color: colors.tint,
+      }
+    : {
+        emoji: '📝',
+        title: `${loggingDays} Tage Log-Streak`,
+        body: 'Zählt jeden Tag, an dem du mindestens eine Mahlzeit einträgst. Wird um Mitternacht geprüft.',
+        stat: `Längste Serie bisher: ${Math.max(loggingDays, 18)} Tage`,
+        color: colors.protein,
+      };
+
+  return (
+    <Modal visible={type !== null} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.modalBackdrop} onPress={onClose}>
+        <Pressable style={styles.modalCard} onPress={(e) => e.stopPropagation()}>
+          <Text style={styles.modalEmoji}>{detail.emoji}</Text>
+          <Text style={styles.modalTitle}>{detail.title}</Text>
+          <Text style={styles.modalBody}>{detail.body}</Text>
+          <View style={[styles.modalStat, { backgroundColor: `${detail.color}1F` }]}>
+            <Text style={[styles.modalStatText, { color: detail.color }]}>{detail.stat}</Text>
+          </View>
+          <Pressable style={styles.modalClose} onPress={onClose}>
+            <Text style={styles.modalCloseText}>Schließen</Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -170,4 +244,34 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   quoteAuthor: { fontSize: 11.5, color: colors.tertiaryLabel, marginTop: 6 },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  modalEmoji: { fontSize: 36, marginBottom: spacing.sm },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: colors.label, textAlign: 'center' },
+  modalBody: {
+    fontSize: 13,
+    color: colors.secondaryLabel,
+    textAlign: 'center',
+    lineHeight: 19,
+    marginTop: spacing.sm,
+  },
+  modalStat: { borderRadius: radius.full, paddingHorizontal: 14, paddingVertical: 7, marginTop: spacing.md },
+  modalStatText: { fontSize: 12.5, fontWeight: '700' },
+  modalClose: { marginTop: spacing.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.lg },
+  modalCloseText: { fontSize: 13.5, fontWeight: '700', color: colors.tint },
 });

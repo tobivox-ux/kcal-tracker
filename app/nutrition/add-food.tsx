@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, TextInput, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +13,14 @@ const MEAL_LABELS: Record<string, string> = Object.fromEntries(
   MEAL_SECTIONS.map((s) => [s.meal, s.label])
 );
 
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ß/g, 'ss');
+}
+
 export default function AddFoodScreen() {
   const { meal } = useLocalSearchParams<{ meal?: MealType }>();
   const addEntry = useNutritionStore((s) => s.addEntry);
@@ -20,10 +28,17 @@ export default function AddFoodScreen() {
   const [selected, setSelected] = useState<DemoFood | null>(null);
   const [grams, setGrams] = useState('100');
 
-  const results = useMemo(
-    () => foodDatabase.filter((f) => f.name.toLowerCase().includes(query.toLowerCase())),
-    [query]
-  );
+  // Umlaut-/akzenttolerante Suche: "hahnchen" findet auch "Hähnchenbrust".
+  // Treffer am Wortanfang zuerst, damit "reis" nicht unter "Preiselbeeren" landet.
+  const results = useMemo(() => {
+    const q = normalize(query);
+    if (!q) return foodDatabase;
+    return foodDatabase
+      .map((f) => ({ food: f, idx: normalize(f.name).indexOf(q) }))
+      .filter((r) => r.idx >= 0)
+      .sort((a, b) => a.idx - b.idx || a.food.name.localeCompare(b.food.name))
+      .map((r) => r.food);
+  }, [query]);
 
   const qty = parseFloat(grams.replace(',', '.')) || 0;
   const factor = qty / 100;
@@ -38,6 +53,7 @@ export default function AddFoodScreen() {
         <View style={{ width: 24 }} />
       </View>
 
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {!selected ? (
         <>
           <View style={styles.searchRow}>
@@ -124,6 +140,7 @@ export default function AddFoodScreen() {
           />
         </View>
       )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -6,6 +6,7 @@ const REST_TIMER_ID = 'rest-timer-done';
 const DAILY_TRACKING_ID = 'daily-tracking-reminder';
 const MORNING_WEIGH_IN_ID = 'morning-weigh-in';
 const CREATINE_ID = 'creatine-reminder';
+const HYDRATION_IDS = ['hydration-1', 'hydration-2', 'hydration-3'];
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -158,4 +159,42 @@ export async function scheduleCreatineReminder() {
     },
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 9, minute: 0 },
   });
+}
+
+// Über den Tag verteilte Trink-Erinnerungen. Mehrere feste Zeitpunkte statt
+// eines Intervalls, damit sie nicht nachts feuern.
+const HYDRATION_TIMES = [
+  { hour: 10, minute: 30 },
+  { hour: 14, minute: 0 },
+  { hour: 17, minute: 30 },
+];
+
+export async function scheduleHydrationReminders() {
+  const granted = await requestNotificationPermissions();
+  if (!granted) return;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('hydration-reminder', {
+      name: 'Trink-Erinnerung',
+      importance: Notifications.AndroidImportance.LOW,
+    });
+  }
+
+  await Promise.all(
+    HYDRATION_IDS.map((id) => Notifications.cancelScheduledNotificationAsync(id).catch(() => {}))
+  );
+
+  await Promise.all(
+    HYDRATION_TIMES.map((time, i) =>
+      Notifications.scheduleNotificationAsync({
+        identifier: HYDRATION_IDS[i],
+        content: { title: 'Trinken nicht vergessen 💧', body: 'Kurz ein Glas Wasser — zählt direkt in der App.' },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour: time.hour,
+          minute: time.minute,
+        },
+      })
+    )
+  );
 }

@@ -10,8 +10,8 @@ import {
   monthlyTrainingHours,
   yearlyTrainingHours,
   totalWorkoutsLogged,
-  workoutHistory,
 } from '../../src/lib/demoData';
+import { useWorkoutHistoryStore } from '../../src/store/workoutHistoryStore';
 
 type Period = 'week' | 'month' | 'year';
 
@@ -28,6 +28,9 @@ const DATA_BY_PERIOD: Record<Period, { label: string; hours: number }[]> = {
 };
 
 export default function WorkoutHistoryScreen() {
+  const workoutHistory = useWorkoutHistoryStore((s) => s.sessions);
+  const cardioSessions = useWorkoutHistoryStore((s) => s.cardio);
+  const removeCardio = useWorkoutHistoryStore((s) => s.removeCardio);
   const [period, setPeriod] = useState<Period>('week');
   const data = DATA_BY_PERIOD[period];
   const meta = PERIODS.find((p) => p.id === period)!;
@@ -95,7 +98,36 @@ export default function WorkoutHistoryScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Sessions</Text>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>Cardio</Text>
+          <Pressable onPress={() => router.push('/workout/cardio')} hitSlop={8}>
+            <Text style={styles.sectionAction}>+ Hinzufügen</Text>
+          </Pressable>
+        </View>
+        {cardioSessions.length === 0 ? (
+          <Text style={styles.emptyText}>Noch kein Cardio getrackt.</Text>
+        ) : (
+          cardioSessions.map((c) => (
+            <View key={c.id} style={styles.sessionRow}>
+              <View style={[styles.sessionDot, { backgroundColor: colors.carbs }]} />
+              <View style={styles.sessionInfo}>
+                <View style={styles.sessionTopRow}>
+                  <Text style={styles.sessionDay}>{c.machine}</Text>
+                  <Text style={styles.sessionDate}>{c.date}</Text>
+                </View>
+                <Text style={styles.sessionMeta}>
+                  {c.durationMin} min · {c.estimatedKcal} kcal geschätzt
+                  {c.displayedKcal > 0 ? ` (Gerät: ${c.displayedKcal})` : ''}
+                </Text>
+              </View>
+              <Pressable onPress={() => removeCardio(c.id)} hitSlop={8}>
+                <Ionicons name="trash-outline" size={15} color={colors.tertiaryLabel} />
+              </Pressable>
+            </View>
+          ))
+        )}
+
+        <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Sessions</Text>
         {workoutHistory.map((session) => (
           <View key={session.id} style={styles.sessionRow}>
             <View style={[styles.sessionDot, session.dayId === 'push' ? styles.dotPush : styles.dotPull]} />
@@ -163,6 +195,9 @@ const styles = StyleSheet.create({
   chartTitle: { fontSize: 14, fontWeight: '700', color: colors.label },
   chartSubtitle: { fontSize: 11, color: colors.secondaryLabel },
   sectionTitle: { fontSize: 15.5, fontWeight: '700', color: colors.label, marginBottom: spacing.sm },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionAction: { fontSize: 13, fontWeight: '700', color: colors.tint, marginBottom: spacing.sm },
+  emptyText: { fontSize: 13, color: colors.tertiaryLabel, fontStyle: 'italic', marginBottom: spacing.sm },
   sessionRow: {
     flexDirection: 'row',
     alignItems: 'center',
