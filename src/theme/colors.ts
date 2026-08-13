@@ -1,25 +1,27 @@
-// iOS-inspired design tokens (San Francisco system font, iOS system colors)
+// Dark, high-contrast design tokens with one energetic signature accent —
+// deliberately not the generic light iOS/SaaS look.
 export const colors = {
-  background: '#F2F2F7',
-  card: '#FFFFFF',
-  border: '#E5E5EA',
-  label: '#1C1C1E',
-  secondaryLabel: '#8E8E93',
-  tertiaryLabel: '#C7C7CC',
+  background: '#0B0C10',
+  card: '#17181D',
+  cardAlt: '#1E2027',
+  border: '#2A2C34',
+  label: '#F5F6F8',
+  secondaryLabel: '#9298A3',
+  tertiaryLabel: '#585C66',
 
-  tint: '#0A84FF',
+  tint: '#FF5A36', // signature accent: CTAs, active tab, key numbers
 
-  calories: '#FF453A',
-  protein: '#30D158',
-  carbs: '#FF9F0A',
-  fat: '#BF5AF2',
+  calories: '#FF3B5C',
+  protein: '#B4FF39',
+  carbs: '#FFC337',
+  fat: '#B26BFF',
 
-  cutting: '#FF453A',
-  bulking: '#30D158',
-  maintenance: '#0A84FF',
+  cutting: '#FF3B5C',
+  bulking: '#34D399',
+  maintenance: '#4DA3FF',
 
-  success: '#30D158',
-  warning: '#FF9F0A',
+  success: '#B4FF39',
+  warning: '#FFC337',
 } as const;
 
 export const spacing = {
@@ -35,4 +37,12 @@ export const radius = {
   md: 16,
   lg: 22,
   full: 999,
+} as const;
+
+// Dark surfaces read as "elevated" via a hairline border, not a drop shadow
+// (a black shadow is invisible on a near-black background).
+export const cardStyle = {
+  backgroundColor: colors.card,
+  borderWidth: 1,
+  borderColor: colors.border,
 } as const;

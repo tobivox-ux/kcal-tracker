@@ -22,20 +22,17 @@ export function AchievementChips({ items }: { items: Achievement[] }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.lg,
     padding: spacing.md,
     marginBottom: spacing.md,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
   },
   title: { fontSize: 16, fontWeight: '700', color: colors.label, marginBottom: spacing.sm },
   scroll: { gap: spacing.sm, paddingRight: spacing.sm },
   chip: {
     width: 118,
-    backgroundColor: colors.background,
+    backgroundColor: colors.cardAlt,
     borderRadius: radius.md,
     padding: spacing.sm,
   },

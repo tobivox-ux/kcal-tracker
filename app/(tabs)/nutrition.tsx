@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../src/theme/colors';
 import { activePhase, today, todaysMeals } from '../../src/lib/demoData';
+import type { MealType } from '../../src/types/database';
 
 export default function NutritionScreen() {
   return (
@@ -24,6 +26,17 @@ export default function NutritionScreen() {
           <SummaryStat label="Fett" value={today.fatG} target={activePhase.fatTargetG} unit="g" color={colors.fat} />
         </View>
 
+        <Pressable style={styles.scanCard} onPress={() => router.push('/nutrition/scan')}>
+          <View style={styles.scanIcon}>
+            <Ionicons name="camera" size={22} color={colors.background} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.scanTitle}>Foto scannen</Text>
+            <Text style={styles.scanSubtitle}>KI schätzt Kalorien & Makros aus einem Foto</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.tertiaryLabel} />
+        </Pressable>
+
         {todaysMeals.map((meal) => {
           const mealCalories = meal.entries.reduce((sum, e) => sum + e.calories, 0);
           return (
@@ -32,7 +45,10 @@ export default function NutritionScreen() {
                 <Text style={styles.mealLabel}>{meal.label}</Text>
                 <View style={styles.mealHeaderRight}>
                   {mealCalories > 0 && <Text style={styles.mealCalories}>{mealCalories} kcal</Text>}
-                  <Pressable style={styles.addButton}>
+                  <Pressable
+                    style={styles.addButton}
+                    onPress={() => router.push(`/nutrition/add-food?meal=${meal.meal satisfies MealType}`)}
+                  >
                     <Ionicons name="add" size={18} color={colors.tint} />
                   </Pressable>
                 </View>
@@ -98,9 +114,11 @@ const styles = StyleSheet.create({
   summaryCard: {
     flexDirection: 'row',
     backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.lg,
     padding: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     justifyContent: 'space-between',
   },
   summaryStat: { alignItems: 'center', flex: 1 },
@@ -108,8 +126,31 @@ const styles = StyleSheet.create({
   summaryValueEmphasized: { fontSize: 20 },
   summaryTarget: { fontSize: 11, color: colors.secondaryLabel },
   summaryLabel: { fontSize: 12, color: colors.secondaryLabel, marginTop: 4, fontWeight: '600' },
+  scanCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm + 2,
+    backgroundColor: 'rgba(255,90,54,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,90,54,0.32)',
+    borderRadius: radius.lg,
+    padding: spacing.sm + 4,
+    marginBottom: spacing.md,
+  },
+  scanIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.tint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanTitle: { fontSize: 14.5, fontWeight: '700', color: colors.label },
+  scanSubtitle: { fontSize: 11.5, color: colors.secondaryLabel, marginTop: 1 },
   mealCard: {
     backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -122,7 +163,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: `${colors.tint}18`,
+    backgroundColor: `${colors.tint}25`,
     alignItems: 'center',
     justifyContent: 'center',
   },

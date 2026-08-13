@@ -20,23 +20,28 @@ Row-Level-Security, ohne einen eigenen Server betreiben zu müssen.
 ## Projektstruktur
 
 ```
-app/                      Expo-Router-Screens (dateibasiertes Routing)
-  _layout.tsx              Root-Layout (Providers, Stack)
+app/                          Expo-Router-Screens (dateibasiertes Routing)
+  _layout.tsx                  Root-Layout (Providers, Stack)
   (tabs)/
-    _layout.tsx             Tab-Navigator
-    index.tsx                Dashboard (Phase, Kalorien-Ring, Makros, Streaks)
-    workouts.tsx              Heutiger Split-Tag, Übungsliste
-    nutrition.tsx              Essensprotokoll nach Mahlzeit
-    progress.tsx                Fortschritts-Chart für Key Lifts
+    _layout.tsx                 Tab-Navigator
+    index.tsx                    Dashboard (Phase, Kalorien-Ring, Makros, Streaks, Erfolge)
+    workouts.tsx                  Tages-Umschalter (Push A/B, Pull A/B) + Übungsübersicht
+    nutrition.tsx                  Essensprotokoll nach Mahlzeit + Foto-Scan-Einstieg
+    progress.tsx                    Wochenrückblick + Körpergewichts-Kurve
+  workout/session.tsx          Aktives Workout: Satz-Logging (Gewicht/Wdh./abgehakt)
+  nutrition/
+    add-food.tsx                Lebensmittelsuche + Mengenauswahl
+    scan.tsx                     Foto-Scan-Flow (Kamera/Galerie -> KI-Schätzung)
 src/
-  components/              Wiederverwendbare UI-Bausteine
+  components/                  Wiederverwendbare UI-Bausteine
   lib/
-    supabase.ts             Supabase-Client
-    demoData.ts              Platzhalter-Daten (bis echtes Backend + Trainingsplan da sind)
-  theme/                    Farb-/Spacing-Tokens (iOS-Look)
-  types/database.ts        TypeScript-Typen passend zum SQL-Schema
+    supabase.ts                 Supabase-Client
+    demoData.ts                  Platzhalter-Daten (bis echtes Backend + Trainingsplan da sind)
+    notifications.ts             Sonntags-Benachrichtigung mit Wochenrückblick
+  theme/                        Farb-/Spacing-Tokens (dunkles Theme, kräftiger Akzent)
+  types/database.ts            TypeScript-Typen passend zum SQL-Schema
 supabase/
-  migrations/0001_init.sql Vollständiges DB-Schema inkl. Row Level Security
+  migrations/0001_init.sql     Vollständiges DB-Schema inkl. Row Level Security
 ```
 
 ## Datenbank-Schema
@@ -80,11 +85,15 @@ npm run android   # Android-Emulator
 npm run web       # Browser
 ```
 
-## Aktueller Stand
+## Features im aktuellen Stand
 
-Die vier Haupt-Screens (Dashboard, Workouts, Ernährung, Fortschritt) sind
-mit Beispieldaten aus `src/lib/demoData.ts` befüllt (Cutting-Phase, 4x/Woche
-Push/Pull-Split), bis ein Supabase-Projekt verbunden ist und der echte
-Trainingsplan eingepflegt wurde. Als Nächstes: Supabase-Queries/-Mutations
-an die Screens anbinden (Auth, Live-Daten statt Demo-Daten) und den echten
-Trainingsplan einbauen.
+- **Workout-Logging:** 4 Split-Tage (Push A/B, Pull A/B) umschaltbar, aktive Session mit editierbarem Gewicht/Wdh. pro Satz, Sätze abhaken oder hinzufügen
+- **Ernährung:** Tagesprotokoll nach Mahlzeit, Lebensmittelsuche mit Mengen-/Makro-Vorschau, Foto-Scan-Flow (echter Kamera-/Galerie-Zugriff über `expo-image-picker`; die Erkennung selbst ist aktuell eine Mock-Antwort — für echte Ergebnisse braucht es eine Supabase Edge Function, die das Foto an ein Vision-Modell schickt)
+- **Phasen:** Cutting/Bulking/Maintenance mit automatisch angepassten Kalorien-/Makrozielen (DB-Trigger)
+- **Motivation:** Trainings- & Log-Streak, PR-Badges, Achievement-Chips, wöchentliche Sonntags-Benachrichtigung (`expo-notifications`, lokal geplant — für zuverlässige Zustellung in Produktion empfiehlt sich ein Dev-Build statt Expo Go)
+
+Alle Screens laufen aktuell mit Beispieldaten aus `src/lib/demoData.ts`
+(Cutting-Phase, 4x/Woche Push/Pull-Split), bis ein Supabase-Projekt verbunden
+ist und der echte Trainingsplan eingepflegt wurde. Als Nächstes:
+Supabase-Queries/-Mutationen an die Screens anbinden (Auth, Live-Daten statt
+Demo-Daten) und den echten Trainingsplan einbauen.

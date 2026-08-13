@@ -9,14 +9,14 @@ interface StreakBarProps {
 export function StreakBar({ trainingWeeks, loggingDays }: StreakBarProps) {
   return (
     <View style={styles.row}>
-      <View style={styles.pill}>
+      <View style={[styles.pill, { backgroundColor: 'rgba(255,90,54,0.14)', borderColor: 'rgba(255,90,54,0.35)' }]}>
         <Text style={styles.emoji}>🔥</Text>
         <View>
           <Text style={styles.value}>{trainingWeeks} Wochen</Text>
           <Text style={styles.label}>Trainings-Streak</Text>
         </View>
       </View>
-      <View style={styles.pill}>
+      <View style={[styles.pill, { backgroundColor: 'rgba(180,255,57,0.10)', borderColor: 'rgba(180,255,57,0.30)' }]}>
         <Text style={styles.emoji}>📝</Text>
         <View>
           <Text style={styles.value}>{loggingDays} Tage</Text>
@@ -34,15 +34,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.md,
     paddingVertical: 10,
     paddingHorizontal: spacing.sm + 2,
     gap: spacing.sm,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
   },
   emoji: { fontSize: 22 },
   value: { fontSize: 14, fontWeight: '700', color: colors.label },

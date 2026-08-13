@@ -7,11 +7,22 @@ import { MacroBar } from '../../src/components/MacroBar';
 import { PhaseBadge } from '../../src/components/PhaseBadge';
 import { StreakBar } from '../../src/components/StreakBar';
 import { AchievementChips } from '../../src/components/AchievementChips';
-import { activePhase, today, todaysRoutineDay, streaks, recentAchievements } from '../../src/lib/demoData';
+import {
+  activePhase,
+  today,
+  routineDays,
+  todaysRoutineDayId,
+  streaks,
+  recentAchievements,
+} from '../../src/lib/demoData';
 
 export default function DashboardScreen() {
   const caloriesRemaining = activePhase.calorieTarget - today.caloriesConsumed;
-  const nextExercise = todaysRoutineDay.exercises.find((e) => !e.done);
+  const todaysRoutineDay = routineDays.find((d) => d.id === todaysRoutineDayId)!;
+  const isExerciseDone = (ex: (typeof todaysRoutineDay.exercises)[number]) =>
+    ex.sets.every((s) => s.done);
+  const doneCount = todaysRoutineDay.exercises.filter(isExerciseDone).length;
+  const nextExercise = todaysRoutineDay.exercises.find((e) => !isExerciseDone(e));
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -72,10 +83,9 @@ export default function DashboardScreen() {
               <Text style={styles.cardTitle}>Heutiges Workout</Text>
               <Text style={styles.chevron}>›</Text>
             </View>
-            <Text style={styles.workoutDayLabel}>{todaysRoutineDay.dayLabel}</Text>
+            <Text style={styles.workoutDayLabel}>{todaysRoutineDay.label}</Text>
             <Text style={styles.workoutSubtext}>
-              {todaysRoutineDay.exercises.filter((e) => e.done).length} / {todaysRoutineDay.exercises.length}{' '}
-              Übungen erledigt
+              {doneCount} / {todaysRoutineDay.exercises.length} Übungen erledigt
               {nextExercise ? ` · als nächstes: ${nextExercise.name}` : ''}
             </Text>
           </View>
@@ -115,14 +125,11 @@ const styles = StyleSheet.create({
   date: { fontSize: 14, color: colors.secondaryLabel, marginTop: 2 },
   card: {
     backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.lg,
     padding: spacing.md,
     marginBottom: spacing.md,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
   },
   cardTitle: { fontSize: 16, fontWeight: '700', color: colors.label, marginBottom: spacing.sm },
   ringRow: { flexDirection: 'row', alignItems: 'center' },
