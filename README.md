@@ -113,6 +113,74 @@ npm run android   # Android-Emulator
 npm run web       # Browser
 ```
 
+## App aufs Handy bekommen
+
+Zwei Wege — der erste zum Entwickeln, der zweite für die App, die dauerhaft
+auf dem Homescreen liegt.
+
+### Weg 1: Expo Go (sofort, zum Ausprobieren)
+
+Am schnellsten, aber die App lebt nur, solange dein Rechner läuft.
+
+```bash
+npm install
+npx expo start
+```
+
+Dann "Expo Go" aus dem App Store / Play Store installieren und den QR-Code aus
+dem Terminal scannen. Änderungen am Code erscheinen **sofort** auf dem Handy
+(Hot Reload) — speichern reicht.
+
+Einschränkungen: Rechner und Handy müssen im selben WLAN sein, und Health/Uhr
+funktioniert hier nicht (braucht ein natives Modul, siehe unten).
+
+### Weg 2: Eigener Dev-Build + EAS Update (die richtige App)
+
+Damit landet eine echte App auf dem Homescreen, die auch ohne deinen Rechner
+läuft — und die du später mit einem einzigen Befehl aktualisierst.
+
+**Einmalig einrichten:**
+
+```bash
+# 1. Kostenlosen Expo-Account anlegen (expo.dev), dann:
+npm install -g eas-cli
+eas login
+
+# 2. Projekt mit deinem Expo-Account verknüpfen
+eas init
+
+# 3. Update-Mechanismus aktivieren
+eas update:configure
+
+# 4. Build erzeugen und aufs Handy laden
+eas build --profile development --platform android   # Android: APK, direkt installierbar
+eas build --profile development --platform ios       # iOS: siehe Hinweis unten
+```
+
+Der Build läuft auf Expos Servern (kostenloses Kontingent reicht dafür). Am
+Ende bekommst du einen Link/QR-Code — damit installierst du die App aufs Handy.
+
+**Bei jeder Änderung danach:**
+
+```bash
+eas update --branch production --message "Was du geändert hast"
+```
+
+Ein Befehl, ein paar Sekunden — beim nächsten Öffnen hat die App die neue
+Version. Kein neuer Build, kein App Store, kein Warten.
+
+### Was du wissen solltest
+
+- **Android ist unkompliziert:** APK herunterladen, installieren, fertig.
+- **iOS braucht mehr:** Ohne Apple-Developer-Account (99 $/Jahr) kannst du die
+  App nur über einen Umweg installieren, und die Signatur läuft nach 7 Tagen
+  ab — dann musst du neu installieren. Mit Account gilt sie ein Jahr.
+- **`eas update` ersetzt nur JS/Assets.** Neue native Module (z. B. wenn die
+  Health-Anbindung dazukommt) brauchen einen neuen `eas build`. Für alles, was
+  wir bisher gebaut haben, reicht `eas update`.
+- **Health/Uhr geht erst im Dev-Build**, nicht in Expo Go — deshalb zeigt die
+  Karte dort klar gekennzeichnete Beispieldaten.
+
 ## Features im aktuellen Stand
 
 **Workout**
@@ -143,6 +211,12 @@ npm run web       # Browser
 **Phasen**
 - Cutting (2.250 kcal), Bulking bewusst als **lean** ausgelegt (~+8% über TDEE statt eines klassischen dirty bulk, 2.850 kcal) und Maintenance (2.650 kcal) — Protein bleibt in allen drei Phasen bei 144 g
 - Phase wechseln über Tap auf das Phase-Badge auf dem Dashboard (`app/phase-select.tsx`); Kalorien-/Makroziele passen sich sofort überall an
+
+**Kalorien-Knast** (`src/lib/punishment.ts`)
+- Wer über sein Tagesziel kommt, bekommt auf dem Dashboard ein Urteil und eine Strafe
+- Vier Stufen: bis 100 kcal drüber passiert nichts (Messungenauigkeit), darüber "Kleiner Ausrutscher" (60 s Plank), ab 350 kcal "Schuldig" (40 Burpees) und ab 800 kcal "Totalschaden" (Beintag)
+- Die Strafe ist pro Tag deterministisch — man kann nicht so lange neu laden, bis eine bequeme kommt
+- Bewusst als Spaß-Mechanik gehalten: der Ton ist frech, nicht beschämend, und die App sagt selbst dazu, dass ein einzelner Tag über dem Ziel nichts ruiniert
 
 **Fortschritt & Motivation**
 - Körpergewicht eintragen direkt im Fortschritts-Screen, neuer Wert erscheint sofort in der Kurve

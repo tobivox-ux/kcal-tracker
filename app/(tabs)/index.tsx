@@ -10,6 +10,7 @@ import { StreakBar } from '../../src/components/StreakBar';
 import { AchievementChips } from '../../src/components/AchievementChips';
 import { FadeInView } from '../../src/components/FadeInView';
 import { todaysRoutineDayId, streaks, recentAchievements, getQuoteOfTheDay } from '../../src/lib/demoData';
+import { judgeDay, drawPunishment } from '../../src/lib/punishment';
 import { useNutritionStore, dailyTotalsFromEntries } from '../../src/store/nutritionStore';
 import { useWorkoutHistoryStore } from '../../src/store/workoutHistoryStore';
 import { useActivePhase } from '../../src/store/phaseStore';
@@ -27,7 +28,10 @@ export default function DashboardScreen() {
   const today = dailyTotalsFromEntries(entries);
   const quote = getQuoteOfTheDay();
   const [streakDetail, setStreakDetail] = useState<'training' | 'logging' | null>(null);
+  const [showPunishment, setShowPunishment] = useState(false);
   const caloriesRemaining = activePhase.calorieTarget - today.caloriesConsumed;
+  const verdict = judgeDay(today.caloriesConsumed, activePhase.calorieTarget);
+  const punishment = drawPunishment(verdict);
   // Es wird nicht täglich trainiert — deshalb zeigt die Karte die nächste
   // fällige Routine (die andere als zuletzt) statt "heutiges Workout".
   const lastSession = sessions[0];
@@ -80,6 +84,21 @@ export default function DashboardScreen() {
         </View>
         </FadeInView>
 
+        {verdict.tier !== 'clean' && (
+          <FadeInView delay={100}>
+            <Pressable style={[styles.verdictCard, { borderColor: `${colors[verdict.color]}55`, backgroundColor: `${colors[verdict.color]}14` }]} onPress={() => setShowPunishment(true)}>
+              <View style={styles.verdictRow}>
+                <Text style={styles.verdictEmoji}>⚖️</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.verdictTitle, { color: colors[verdict.color] }]}>{verdict.title}</Text>
+                  <Text style={styles.verdictSub}>{verdict.overBy} kcal über dem Ziel · Strafe ansehen</Text>
+                </View>
+                <Text style={styles.chevron}>›</Text>
+              </View>
+            </Pressable>
+          </FadeInView>
+        )}
+
         <FadeInView delay={140}>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Makros heute</Text>
@@ -131,6 +150,28 @@ export default function DashboardScreen() {
           <Text style={styles.quoteAuthor}>— {quote.author}</Text>
         </View>
       </ScrollView>
+
+      <Modal visible={showPunishment} transparent animationType="fade" onRequestClose={() => setShowPunishment(false)}>
+        <Pressable style={styles.punBackdrop} onPress={() => setShowPunishment(false)}>
+          <Pressable style={styles.punCard} onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.punEmoji}>{punishment?.emoji ?? '⚖️'}</Text>
+            <Text style={[styles.punTitle, { color: colors[verdict.color] }]}>{verdict.title}</Text>
+            <Text style={styles.punBody}>{verdict.verdict}</Text>
+            {punishment && (
+              <View style={[styles.taskBox, { borderColor: `${colors[verdict.color]}44` }]}>
+                <Text style={styles.taskLabel}>DEINE STRAFE</Text>
+                <Text style={styles.taskText}>{punishment.task}</Text>
+              </View>
+            )}
+            <Text style={styles.punFinePrint}>
+              Ein Tag drüber wirft dich nicht zurück — entscheidend ist der Schnitt über die Woche.
+            </Text>
+            <Pressable onPress={() => setShowPunishment(false)}>
+              <Text style={styles.punClose}>Angenommen 🫡</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -243,6 +284,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  verdictCard: { borderWidth: 1, borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md },
+  verdictRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 2 },
+  verdictEmoji: { fontSize: 24 },
+  verdictTitle: { fontSize: 15.5, fontWeight: '700' },
+  verdictSub: { fontSize: 12.5, color: colors.secondaryLabel, marginTop: 2 },
+  punBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
+  punCard: { width: '100%', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.lg, alignItems: 'center' },
+  punEmoji: { fontSize: 44 },
+  punTitle: { fontSize: 21, fontWeight: '700', marginTop: spacing.sm },
+  punBody: { fontSize: 13.5, color: colors.secondaryLabel, textAlign: 'center', lineHeight: 19, marginTop: 6 },
+  taskBox: { width: '100%', borderWidth: 1, borderRadius: radius.md, padding: spacing.md, marginTop: spacing.md },
+  taskLabel: { fontSize: 10, fontWeight: '700', color: colors.tertiaryLabel, letterSpacing: 1.2 },
+  taskText: { fontSize: 15.5, fontWeight: '600', color: colors.label, marginTop: 6, lineHeight: 21 },
+  punFinePrint: { fontSize: 11.5, color: colors.tertiaryLabel, textAlign: 'center', lineHeight: 16, marginTop: spacing.md },
+  punClose: { fontSize: 14, fontWeight: '700', color: colors.tint, marginTop: spacing.md },
   quoteAuthor: { fontSize: 11.5, color: colors.tertiaryLabel, marginTop: 6 },
   modalBackdrop: {
     flex: 1,
