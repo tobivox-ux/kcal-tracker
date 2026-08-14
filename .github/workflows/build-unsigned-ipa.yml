@@ -5,8 +5,6 @@ on:
   push:
     branches:
       - claude/fitness-nutrition-tracker-init-e33doy
-    paths:
-      - .github/workflows/build-unsigned-ipa.yml
 
 jobs:
   build-ipa:
