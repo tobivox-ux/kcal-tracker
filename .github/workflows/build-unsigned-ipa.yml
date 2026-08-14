@@ -2,6 +2,11 @@ name: Build unsigned iOS ipa (for AltStore/SideStore sideload)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - claude/fitness-nutrition-tracker-init-e33doy
+    paths:
+      - .github/workflows/build-unsigned-ipa.yml
 
 jobs:
   build-ipa:
